@@ -1,0 +1,11 @@
+{
+  "extends": "solium:all",
+  "plugins": ["security"],
+  "rules": {
+    "imports-on-top": 1,
+    "variable-declarations": 1,
+    "indentation": ["error", 4],
+    "quotes": ["error", "double"],
+    "operator-whitespace": 0
+  }
+}
