@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
   "homepage": "https://www.digioptions.com",
   "main": "index.js",
@@ -13,7 +13,7 @@
   "scripts": {
     "start": "./generate.js",
     "solium": "solium --file Digioptions.sol",
-    "eslint": "eslint ./*.js ./test/*.js",
+    "eslint": "eslint ./*.js ./test*/*.js",
     "test": "mocha test/test_createmarket.js"
   },
   "files": [
@@ -34,13 +34,13 @@
     "ethereum"
   ],
   "devDependencies": {
-    "factsigner": "git+https://github.com/berlincode/factsigner",
-    "solc": "^0.4.24",
-    "solium": "^1.1.7",
+    "async": "^2.1.5",
+    "eslint": "4.19.1",
+    "factsigner": "git+https://github.com/berlincode/factsigner.git",
     "ganache-core": "^2.1.0",
     "mocha": "^5.2.0",
-    "web3": "1.0.0-beta.34",
-    "async": "^2.1.5",
-    "eslint": "4.19.1"
+    "solc": "^0.4.24",
+    "solium": "^1.1.7",
+    "web3": "1.0.0-beta.34"
   }
 }

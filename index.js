@@ -22,6 +22,19 @@
 }(this, function (digioptions_markets_abi, digioptions_markets_bin) {
   return {
     digioptions_markets_abi: digioptions_markets_abi,
-    digioptions_markets_bin: digioptions_markets_bin
+    digioptions_markets_bin: digioptions_markets_bin,
+    orderToHash: function(web3_utils, order){
+      var toBN = function(val){return web3_utils.toBN(val);};
+      return web3_utils.soliditySha3(
+        {t: 'address', v: order.marketsAddr},
+        {t: 'bytes32', v: order.marketFactHash},
+        // TODO what format it input format here?
+        {t: 'uint16', v: order.optionID},
+        {t: 'uint256', v: order.price},
+        {t: 'int256', v: order.size},
+        {t: 'uint256', v: order.orderID},
+        {t: 'uint256', v: order.blockExpires}
+      );
+    }
   };
 }));
