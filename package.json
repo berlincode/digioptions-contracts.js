@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.20.0",
+  "version": "0.22.0",
   "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
   "homepage": "https://www.digioptions.com",
   "main": "index.js",
@@ -33,14 +33,14 @@
     "ethereum"
   ],
   "dependencies": {
-    "web3": "^1.0.0-beta.35"
+    "web3": "^1.0.0-beta.36"
   },
   "devDependencies": {
     "eslint": "4.19.1",
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
-    "ganache-core": "^2.1.5",
+    "ganache-core": "^2.2.1",
     "mocha": "^5.2.0",
-    "solc": "^0.4.24",
+    "solc": "^0.4.25",
     "solium": "^1.1.8"
   }
 }

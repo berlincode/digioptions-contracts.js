@@ -22,13 +22,13 @@
       root.digioptions_markets_bin
     );
   }
-}(this, function (Web3, digioptions_markets_abi, digioptions_markets_bin) {
+}(this, function (Web3, digioptionsMarketsAbi, digioptionsMarketsBin) {
   var web3_utils = Web3.utils;
 
   return {
-    digioptions_markets_abi: digioptions_markets_abi,
-    digioptions_markets_bin: digioptions_markets_bin,
-    orderToHash: function(order){
+    digioptionsMarketsAbi: digioptionsMarketsAbi,
+    digioptionsMarketsBin: digioptionsMarketsBin,
+    orderOfferToHash: function(order){
       return web3_utils.soliditySha3(
         {t: 'address', v: order.marketsAddr},
         {t: 'bytes32', v: order.marketFactHash},
@@ -36,10 +36,14 @@
         {t: 'uint256', v: order.price},
         {t: 'int256', v: order.size},
         {t: 'uint256', v: order.orderID},
-        {t: 'uint256', v: order.blockExpires}
+        {t: 'uint256', v: order.blockExpires},
+        // we do not need the address for the order itself, since the address is impliclitly
+        // available via the signature
+        // but if the addess is contained, we can use this hash for order tracking too 
+        {t: 'address', v: order.addr}
       );
     },
-    baseUnitExp: 18, // used for strikes and settlement
+    //baseUnitExp: 18, // used for strikes and settlement
     optionPayout: 1000000000 // payout per successful option (in wei) 
   };
 }));
