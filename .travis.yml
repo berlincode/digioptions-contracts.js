@@ -4,6 +4,5 @@ install:
     - npm ci             # instead of default npm install 
 
 node_js:
-  - "7"
   - "8"
   - "10"
