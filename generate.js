@@ -8,14 +8,13 @@
 //
 // except that it wraps the output into js modules (CommonJS, AMD, Browser)
 
+const file_bin = 'digioptions_markets_bin.js';
+const file_abi = 'digioptions_markets_abi.js';
+const file = 'Digioptions.sol';
+const contractName = 'DigiOptions';
+
 var fs = require('fs');
 var solc = require('solc');
-
-function camelCaseToUnderscore(str) {
-  return str.replace(/\W+/g, '-')
-    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-    .toLowerCase();
-}
 
 var wrap_data_into_module = function(fname, varname, data){
 
@@ -44,36 +43,39 @@ var wrap_data_into_module = function(fname, varname, data){
 
 };
 
+if (fs.existsSync(file_bin))
+  fs.unlinkSync(file_bin);
 
-var filenames = ['Digioptions.sol'];
-for (var i in filenames) {
-  var filename = filenames[i];
+if (fs.existsSync(file_abi))
+  fs.unlinkSync(file_abi);
 
-  if (fs.existsSync(filename + '.bytecode'))
-    fs.unlink(filename + '.bytecode');
 
-  if (fs.existsSync(filename + '.interface'))
-    fs.unlink(filename + '.interface');
+var input = {};
+input[file] = {content: fs.readFileSync(file, 'utf8')};
 
-  var input = fs.readFileSync(filename, 'utf8');
-  var output = solc.compile(input, 1); // 1 activates the optimizer
-  if (typeof(output.errors) !== 'undefined')
-    console.log(output.errors);
+var output = JSON.parse(solc.compileStandardWrapper(JSON.stringify({
+  language: 'Solidity',
+  settings: {
+    optimizer: {
+      enabled: true
+    },
+    outputSelection: {
+      '*': {
+        '*': ['metadata', 'evm.bytecode', 'abi']
+      },
+    }
+  },
+  sources: input
+})));
 
-  for (var contractName in output.contracts) {
-    var fileNameBase = contractName;
-    if (contractName.indexOf(':') >= 0)
-      fileNameBase = contractName.split(':')[1];
+if (typeof(output.errors) !== 'undefined')
+  console.log(output.errors);
 
-    // code and ABI that are needed by web3
-    console.log(fileNameBase);
-
-    // bytecode is wrapped inside quotes so that it is json compatible (and a json-fetch from web app works)
-    // additionally use .json ending so that we can require the files
-    //fs.writeFileSync(fileNameBase + '.bin.json', '"' + output.contracts[contractName].bytecode + '"\n', 'utf8');
-    //fs.writeFileSync(fileNameBase + '.abi.json', output.contracts[contractName].interface, 'utf8');
-    wrap_data_into_module(camelCaseToUnderscore(fileNameBase) + '_bin.js', camelCaseToUnderscore(fileNameBase) + '_bin', '"' + output.contracts[contractName].bytecode + '"');
-    wrap_data_into_module(camelCaseToUnderscore(fileNameBase) + '_abi.js', camelCaseToUnderscore(fileNameBase) + '_abi', output.contracts[contractName].interface);
-  }
+try {
+  // bytecode is wrapped inside quotes so that it is json compatible (and a json-fetch from web app works)
+  wrap_data_into_module(file_bin, 'digioptions_markets_bin', '"' + output.contracts[file][contractName].evm.bytecode.object + '"');
+  wrap_data_into_module(file_abi, 'digioptions_markets_abi', JSON.stringify(output.contracts[file][contractName].abi));
+  console.log('writing contract abi/bin of source', file);
+} catch(err) {
+  console.log('ERROR: failed to write contract abi/bin of source:', file, err);
 }
-

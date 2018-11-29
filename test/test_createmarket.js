@@ -1,16 +1,14 @@
 // vim: sts=2:ts=2:sw=2
 /* eslint-env mocha, es6 */
 
-const digioptionsContracts = require('../index.js');
-const factsigner = require('factsigner');
 const Web3 = require('web3');
-const assert = require('assert');
 const Ganache = require('ganache-core');
+const assert = require('assert');
 
-const contractInterface = digioptionsContracts.digioptionsMarketsAbi;
-const contractBytecode = digioptionsContracts.digioptionsMarketsBin;
-//const orderToHash = digioptionsContracts.orderToHash;
+const factsigner = require('factsigner');
 
+const digioptionsContracts = require('../index.js');
+const contractBytecode = require('../digioptions_markets_bin.js');
 
 //before('initialize variables', function(done) {
 //  done();
@@ -35,7 +33,8 @@ async function setup(web3){
         secretKey: '0x2fe53f5b2e15c02cf3d15bec513c72938f41ff389ac6e829e857267acfea6bec',
         balance: 0
       } // used only as signing authority
-    ]
+    ],
+    time: new Date(1), // set time of first block to 1970 so that markets can always be created
   };
 
   web3.setProvider(Ganache.provider(options));
@@ -92,12 +91,13 @@ describe('Test createMarket() and getMarketDataList()', function() {
   before('setup', async function() {
     this.web3 = new Web3();
     const accounts = await setup(this.web3);
-    this.accountDefault = accounts[0];
+    this.accountOwner = accounts[0];
+    this.accountOther = accounts[1];
     this.accountSign = accounts[2];
   });
 
   it('create contract', async function() {
-    const contract = new this.web3.eth.Contract(contractInterface);
+    const contract = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketsAbi);
 
     this.marketsContract = await contract.deploy(
       {
@@ -107,11 +107,11 @@ describe('Test createMarket() and getMarketDataList()', function() {
       {
         gas: 4000000,
         //value: 0,
-        from: this.accountDefault
+        from: this.accountOwner
       }
     );
     assert.notEqual(this.marketsContract, undefined);
-  
+
     // should contain 0 markets
     let marketDataList = await this.marketsContract.methods.getMarketDataList(true, false, 0, 20, []).call();
     marketDataList = marketDataList.filter(function(marketData){return marketData.marketBaseData.expirationDatetime > 0;});
@@ -139,7 +139,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       signature
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     });
 
     let marketData = await this.marketsContract.methods.getMarketData(marketFactHash0).call();
@@ -170,7 +170,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       signature
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     });
 
     // should contain 2 markets
@@ -180,6 +180,30 @@ describe('Test createMarket() and getMarketDataList()', function() {
     assert.equal(marketDataList.length, 2);
     assert.equal(marketDataList[0].marketFactHash, marketFactHash0);
     assert.equal(marketDataList[1].marketFactHash, marketFactHash1);
+  });
+
+  it('should NOT add market #2 (by somone not owning of the contract)', async function() {
+    let signature = await factsigner.sign(this.web3, this.accountSign, marketFactHash2);
+    await this.marketsContract.methods.createMarket(
+      {
+        expirationDatetime: market2.settlement,
+        underlying: factsigner.stringToHex(market2.name),
+        transactionFee: transactionFee.toString(),
+        ndigit: market2.ndigit,
+        baseUnitExp: market2.baseUnitExp, /* typically 18 */
+        objectionPeriod: market2.objectionPeriod,
+        strikes: market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
+        signerAddr: this.accountSign,
+      },
+      false, // testMarket
+      signature
+    ).send({
+      gas: 3000000,
+      from: this.accountOther
+    }).then(
+      () => Promise.reject(new Error('Expected method to reject.')),
+      err => assert.equal(err instanceof Error, true)
+    );
   });
 
   it('add market #2', async function() {
@@ -199,7 +223,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       signature
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     });
 
     let marketData = await this.marketsContract.methods.getMarketData(marketFactHash2).call();
@@ -232,7 +256,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       signature
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     }).then(
       () => Promise.reject(new Error('Expected method to reject.')),
       err => assert.equal(err instanceof Error, true)
@@ -256,7 +280,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       signature
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     }).then(
       () => Promise.reject(new Error('Expected method to reject.')),
       err => assert.equal(err instanceof Error, true)
@@ -294,7 +318,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
       true
     ).send({
       gas: 3000000,
-      from: this.accountDefault
+      from: this.accountOwner
     });
   });
 
@@ -302,5 +326,31 @@ describe('Test createMarket() and getMarketDataList()', function() {
     let marketDataList = await this.marketsContract.methods.getMarketDataList(true, false, 0, 20, []).call();
     marketDataList = marketDataList.filter(function(marketData){return marketData.marketBaseData.expirationDatetime > 0;});
     assert.equal(marketDataList.length, 2);
+  });
+
+  it('check contract version', async function() {
+    const version = await this.marketsContract.methods.version().call();
+    assert.equal(
+      (digioptionsContracts.version.major << 32) +
+      (digioptionsContracts.version.minor << 16) +
+      digioptionsContracts.version.bugfix
+      ,
+      version
+    );
+    assert.equal(
+      process.env.npm_package_version,
+      digioptionsContracts.version.major + '.' +
+      digioptionsContracts.version.minor + '.' +
+      digioptionsContracts.version.bugfix
+    );
+  });
+
+  it('check payoutPerNanoOption', async function() {
+    const payoutPerNanoOption = Web3.utils.toBN(await this.marketsContract.methods.PAYOUT_PER_NANOOPTION().call());
+    assert.ok(payoutPerNanoOption.eq(digioptionsContracts.payoutPerNanoOption));
+
+    // check that one whole option is worth 1 ether on win
+    const one = Web3.utils.toBN('1');
+    assert.ok(Web3.utils.toWei(one, 'ether').eq(digioptionsContracts.nanoOptionsPerOption.mul(digioptionsContracts.payoutPerNanoOption)));
   });
 });

@@ -1,36 +1,130 @@
 /*
- Digital Option Exchange Contract used by https://www.digioptions.com
+ Digital Options Exchange Contract used by https://www.digioptions.com
 
- Get the most recent version from: https://www.digioptions.com/digioptions.sol.txt
+ Version 0.41.0
 
- Version 0.22.0
+ Copyright (c) [digioptions.com](http://www.digioptions.com)
 
- Copyright (c) digioptions.com (http://www.digioptions.com)
+ Designed to work with signatures from [factsigner.com](https://factsigner.com)
 
- Designed to work with signatures from https://factsigner.com
+ Public repository:
+ https://github.com/berlincode/digioptions-contracts.js
+
+ elastic.code@gmail.com
+ mail@digioptions.com
 
 */
 
-pragma solidity ^0.4.25;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
+library SafeMath {
 
-contract DigioptionsMarkets {
-
-    enum State {USER_NONE, USER_EXISTS, USER_PAYED_OUT}
-    //each option is worth 1000000000 wei in case of win
-    uint256 constant PAYOUT_PER_OPTION = 1000000000;
-
-    struct Position {
-        State state; // just to remember which user was alweday added
-        // TODO rename positions to e.g. rangePos?
-        mapping(uint16 => int256) positions; // TODO maybe list is cheaper?
+    /* unsigned integer */
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        assert(c / a == b);
+        return c;
     }
 
-    // TODO reorder to save space/gas
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        assert(b <= a);
+        return a - b;
+    }
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
+
+    /* signed integer */
+    function mul(int256 a, int256 b) internal pure returns (int256) {
+        // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
+        if (a == 0) {
+            return 0;
+        }
+        int256 c = a * b;
+        assert(c / a == b);
+        return c;
+    }
+
+    function sub(int256 a, int256 b) internal pure returns (int256) {
+        int256 c = a - b;
+        assert((b >= 0 && c <= a) || (b < 0 && c > a));
+        return c;
+    }
+
+    function add(int256 a, int256 b) internal pure returns (int256) {
+        int256 c = a + b;
+        assert((b >= 0 && c >= a) || (b < 0 && c < a));
+        return c;
+    }
+}
+
+
+library SafeCast {
+    /**
+     * Cast unsigned a to signed a.
+     */
+    function castToInt(uint256 a) internal pure returns(int256) {
+        assert(a < (1 << 255));
+        return int(a);
+    }
+
+    /**
+     * Cast signed a to unsigned a.
+     */
+    function castToUint(int256 a) internal pure returns(uint256) {
+        assert(a >= 0);
+        return uint(a);
+    }
+}
+
+
+contract DigiOptions {
+    using SafeCast for int;
+    using SafeCast for uint;
+    using SafeMath for uint256;
+    using SafeMath for int256;
+
+    /* public variables / constants */
+    uint256 public version = (
+        (0 << 32) + /* major */
+        (41 << 16) + /* minor */
+        0 /* bugfix */
+    );
+    //each nanoOption is worth 1000000000 wei in case of win,
+    // so one whole option is worth 1 ether in case of win
+    int256 constant public PAYOUT_PER_NANOOPTION = 1000000000;
+    address public owner;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function.");
+        _;
+    }
+
+    enum UserState {USER_NONE, USER_EXISTS, USER_PAYED_OUT}
+
+    struct UserData {
+        UserState state; // just to remember which user was alweday added
+        mapping(uint16 => int256) positions;
+    }
+
     struct MarketBaseData {
-        /* constant core market data - part of marketFactHash calculation */
-        /* order is important for signature generation/check */
+        /* constant core market data, part of marketFactHash calculation */
 
         bytes32 underlying;
         uint64 expirationDatetime; /* used for sorting contracts */
@@ -38,32 +132,36 @@ contract DigioptionsMarkets {
         uint8 baseUnitExp;
         uint32 objectionPeriod; /* e.g. 3600 seconds */
         int256[] strikes;
-        uint256 transactionFee; /* currently not used */
+        uint256 transactionFee; /* fee in wei for every ether of value (payed by orderTaker) */
 
-        address signerAddr; /* address used to check the signed result (e.g. of realitykeys) */
+        address signerAddr; /* address used to check the signed result (e.g. of factsigner) */
     }
 
     struct MarketData {
         MarketBaseData marketBaseData;
-        int16 winningOptionID;
+        Data data;
         bytes32 marketFactHash;
-        State state;
+        UserState userState;
+    }
+
+    struct Data {
+        /* winningOptionID is only valid if settled == true */
+        uint16 winningOptionID;
+        bool settled;
+        bool testMarket;
+        uint8 typeDuration;
     }
 
     /* we use a simple linked list to sort contracts by expirationDatetime date */
     struct Market {
         bytes32 previous;
-        bool testMarket;
 
-        /* on market settlement winningOptionID is set to a value >= 0 */
-        int16 winningOptionID;
-
+        Data data;
         MarketBaseData marketBaseData;
-        mapping(address => Position) userState;
+        mapping(address => UserData) userData;
 
         /* for settlement calculation we need a list of all users */
         address[] users;
-//        mapping(address => State) userState; // just to remember which user was alweday added
     }
 
     struct Signature {
@@ -75,11 +173,12 @@ contract DigioptionsMarkets {
     struct OrderOffer {
         bytes32 marketFactHash;
         uint16 optionID;
+        bool buy; // does the offer owner want to buy or sell options
         uint256 pricePerOption;
-        int256 size;
+        uint256 size;
         uint256 orderID;
         uint256 blockExpires;
-        address addr;// TODO rename orderOwnerAddr?
+        address offerOwner;
     }
 
     struct OrderOfferSigned {
@@ -88,29 +187,53 @@ contract DigioptionsMarkets {
     }
 
     /* variables */
-    address public ownerAddr;
-    mapping(address => uint256) liquidityUser;
-    Market head; /* we use only head.previous */
-    mapping(bytes32 => Market) markets;
+    mapping(address => uint256) internal liquidityUser;
+    Market internal head; /* we use only head.previous */
+    mapping(bytes32 => Market) internal markets;
 
-    mapping(bytes32 => int256) offersAccepted; // remember how many options from an offer are already traded
+    mapping(bytes32 => uint256) internal offersAccepted; // remember how many options from an offer are already traded
+    mapping(address => bytes32[]) internal userMarkets; // keep track which markets a user is invested
+    mapping(address => uint32) internal userMarketsIdx;
 
-    event MarketCreate(bytes32 marketFactHash);
+    event MarketCreate(bytes32 marketFactHash, bytes32 indexed underlying, uint8 indexed typeDuration);
     event MarketSettlement(bytes32 marketFactHash);
     // this may result in liquidity change
-    event PositionChange(address indexed addr, bytes32 indexed marketFactHash, uint256 datetime, int16 optionID, uint256 pricePerOption, int256 size);
     event LiquidityAddWithdraw(address indexed addr, uint256 datetime, int256 amount);
+    event PositionChange(
+        address indexed addr,
+        bytes32 indexed marketFactHash,
+        uint256 datetime,
+        bool buy,
+        uint16 optionID,
+        uint256 pricePerOption,
+        uint256 size,
+        bytes32 offerHash
+    );
 
     /* This is the constructor */
     constructor () public {
-        ownerAddr = msg.sender;
+        owner = msg.sender;
+    }
+
+    // default fallback
+    function() external payable {
+        liquidityAdd();
+    }
+
+    function liquidityWithdraw (uint256 amount) external {
+        require (amount <= liquidityUser[msg.sender], "Not enough liquidity.");
+        /* Remember to reduce the liquidity BEFORE */
+        /* sending to prevent re-entrancy attacks */
+        liquidityUser[msg.sender] = liquidityUser[msg.sender].sub(amount);
+        msg.sender.transfer(amount);
+        emit LiquidityAddWithdraw(msg.sender, block.timestamp, int256(-amount));
     }
 
     function createMarket (
-        MarketBaseData marketBaseData,
+        MarketBaseData memory marketBaseData,
         bool testMarket,
-        Signature signature
-    ) public
+        Signature memory signature
+    ) public onlyOwner // this should be external (see https://github.com/ethereum/solidity/issues/5479)
     {
         bytes32 marketFactHash = keccak256(
             abi.encodePacked(
@@ -122,8 +245,6 @@ contract DigioptionsMarkets {
                 marketBaseData.expirationDatetime /* 'settlement' unix epoch seconds UTC */
             )
         );
-
-        require(msg.sender == ownerAddr, "Sender not authorized.");
 
         /* Check that the market does not already exists */
         require(markets[marketFactHash].marketBaseData.expirationDatetime == 0, "Market already exists.");
@@ -157,7 +278,6 @@ contract DigioptionsMarkets {
         /* check that the final settlement precision high enough for the supplied strikes */
         assert(int16(marketBaseData.baseUnitExp) >= marketBaseData.ndigit);
         for (cnt = 0; cnt < marketBaseData.strikes.length; cnt++) {
-            // TODO is this correct for negative strikes?
             assert((marketBaseData.strikes[cnt] % int256(10**uint256((int256(marketBaseData.baseUnitExp)-marketBaseData.ndigit)))) == 0);
         }
 
@@ -167,12 +287,30 @@ contract DigioptionsMarkets {
             market = previous;
             previous = markets[market.previous];
         }
+        uint8 typeDuration = 5;
+        uint256 secondsUntilExpiration = uint256(marketBaseData.expirationDatetime).sub(uint256(block.timestamp));
+        if (secondsUntilExpiration > 3888000) // > 45 days
+            typeDuration = 0;
+        else if (secondsUntilExpiration > 8 * 24 * 60 * 60) // > 9 days
+            typeDuration = 1;
+        else if (secondsUntilExpiration > 36 * 60 * 60) // > 36 hours
+            typeDuration = 2;
+        else if (secondsUntilExpiration > 2 * 60 * 60) // > 2 hours
+            typeDuration = 3;
+        else if (secondsUntilExpiration > 15 * 60) // > 15 min
+            typeDuration = 4;
 
         /* using memory for struct before commiting to storage */
         Market memory newMarket;
         newMarket.previous = market.previous; /* marketFactHash previous */
-        newMarket.testMarket = testMarket;
-        newMarket.winningOptionID = -1; // no optionID has won yet
+
+        newMarket.data = Data({
+            testMarket: testMarket,
+            // winningOptionID is only valid if settled == true
+            winningOptionID: 0,
+            settled: false,
+            typeDuration: typeDuration
+        });
 
         newMarket.marketBaseData = marketBaseData;
 
@@ -180,20 +318,19 @@ contract DigioptionsMarkets {
         markets[marketFactHash] = newMarket;
         market.previous = marketFactHash;
 
-        emit MarketCreate(marketFactHash);
+        emit MarketCreate(marketFactHash, marketBaseData.underlying, typeDuration);
     }
 
     function getMarketDataList (
-// TODO reorder arguments?
         bool filterTestMarkets, // default: true // if true all test markets are filtered out
         bool filterNoTradedMarkets, // default: false // filter out all markets the the uses (msg.sender) has not traded
         uint64 expirationDatetime,
         uint16 len,
-        bytes32[] marketFactHashLast // if list is empty we start at head - otherwise we continue to list after marketFactHashLast[0]
+        bytes32[] calldata marketFactHashLast // if list is empty we start at head - otherwise we continue to list after marketFactHashLast[0]
     )
-        public
+        external
         view
-        returns (MarketData[] marketList)
+        returns (MarketData[] memory marketList)
     {
         Market memory market;
         marketList = new MarketData[](len);
@@ -210,10 +347,10 @@ contract DigioptionsMarkets {
             (markets[market.previous].marketBaseData.expirationDatetime > 0) &&
             (markets[market.previous].marketBaseData.expirationDatetime >= expirationDatetime)
         ) {
-            if (! 
+            if (!
                 (
-                    (filterTestMarkets && markets[market.previous].testMarket) ||
-                    (filterNoTradedMarkets && (markets[market.previous].userState[msg.sender].state != State.USER_NONE))
+                    (filterTestMarkets && markets[market.previous].data.testMarket) ||
+                    (filterNoTradedMarkets && (markets[market.previous].userData[msg.sender].state != UserState.USER_NONE))
                 )) {
                 marketList[idx] = getMarketData(market.previous);
                 idx++;
@@ -223,81 +360,55 @@ contract DigioptionsMarkets {
         return marketList;
     }
 
-    function setTestMarket (bytes32 marketFactHash, bool testMarket) public {
-        require(msg.sender == ownerAddr, "Sender not authorized.");
-
-        markets[marketFactHash].testMarket = testMarket;
+    function setTestMarket (bytes32 marketFactHash, bool testMarket) public onlyOwner {
+        markets[marketFactHash].data.testMarket = testMarket;
     }
 
-    // TODO should events have the same name as the corresponding functions?
     function liquidityAdd () public payable {
         if (msg.value > 0) {
-            liquidityUser[msg.sender] += msg.value;
+            liquidityUser[msg.sender] = liquidityUser[msg.sender].add(msg.value);
             emit LiquidityAddWithdraw(msg.sender, block.timestamp, int256(msg.value));
         }
     }
 
-    function liquidityWithdraw (uint256 amount) public {
-        require (amount <= liquidityUser[msg.sender], "Not enough liquidity.");
-        /* Remember to reduce the liquidity BEFORE */
-        /* sending to prevent re-entrancy attacks */
-        liquidityUser[msg.sender] -= amount;
-        msg.sender.transfer(amount);
-        emit LiquidityAddWithdraw(msg.sender, block.timestamp, int256(-amount));
-    }
-
-    /* returns all data that was required at market creation and additionally int16 winningOptionID */
-    function getMarketData (bytes32 marketFactHash)
-        public
-        view
-        returns (MarketData marketData)
-    {
-        marketData.marketBaseData = markets[marketFactHash].marketBaseData;
-        marketData.winningOptionID = markets[marketFactHash].winningOptionID;
-        marketData.marketFactHash = marketFactHash;
-        marketData.state = markets[marketFactHash].userState[msg.sender].state;
-// TODO return testMarket?
-        return marketData;
-    }
-
-/*
-    function getPositionsx (bytes32 marketFactHash, address user)
-        public
-        view
-        returns (int256[] positions)
-    {
-        int256[] memory positionsAll = new int256[](markets[marketFactHash].marketBaseData.strikes.length + 1);
-        for (uint16 optionID = 0; optionID <= markets[marketFactHash].marketBaseData.strikes.length; optionID++) {
-            positionsAll[optionID] = markets[marketFactHash].userState[user].positions[optionID];
-        }
-        return positionsAll;
-    }
-*/
-
     function getLiquidityAndPositions (bytes32 marketFactHash, address user)
-        public
+        external
         view
-        returns (uint256 liquidity, int256[] positions, State state)
+        returns (uint256 liquidity, int256[] memory positions, UserState userState)
     {
         // return user's total contract liquidity and positions for selected market
         int256[] memory positionsOptionID = new int256[](markets[marketFactHash].marketBaseData.strikes.length + 1);
         for (uint16 optionID = 0; optionID <= markets[marketFactHash].marketBaseData.strikes.length; optionID++) {
-            positionsOptionID[optionID] = markets[marketFactHash].userState[user].positions[optionID];
+            positionsOptionID[optionID] = markets[marketFactHash].userData[user].positions[optionID];
         }
-// TODO return of liquidityUser[user] (should be first our last argument since it belongs to all markets of this contract
-        return (liquidityUser[user], positionsOptionID, markets[marketFactHash].userState[user].state);
+        return (liquidityUser[user], positionsOptionID, markets[marketFactHash].userData[user].state);
+    }
+
+    /* returns all relevant market data */
+    function getMarketData (bytes32 marketFactHash)
+        public
+        view
+        returns (MarketData memory marketData)
+    {
+        Market storage market = markets[marketFactHash];
+        return MarketData({
+            marketBaseData: market.marketBaseData,
+            data: market.data,
+            marketFactHash: marketFactHash,
+            userState: market.userData[msg.sender].state // TODO not (yet) used - can maybe removed?
+        });
     }
 
     function settlement (
         bytes32 marketFactHash, /* market to settle */
-        Signature signature,
+        Signature memory signature,
         int256 value,
         uint256 maxNumUsersToPayout
-    ) public
+    ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
     {
-        require(markets[marketFactHash].winningOptionID == -1, "Market already settled.");
+        require(markets[marketFactHash].data.settled == false, "Market already settled.");
 
-        /* anybody with access to the signature-value-combination can settle the market */
+        /* anybody with access to the signed value (from signerAddr) can settle the market */
         require(
             verify(
                 keccak256(
@@ -312,17 +423,16 @@ contract DigioptionsMarkets {
             "Signature invalid."
         );
 
-// TODO typconvertierungen vereinfachen?
         Market storage market = markets[marketFactHash];
-        int16 winningOptionID = int16(market.marketBaseData.strikes.length);
+        uint16 winningOptionID = uint16(market.marketBaseData.strikes.length);
         for (uint16 cnt = 0; cnt < market.marketBaseData.strikes.length; cnt++) {
             if (value < market.marketBaseData.strikes[cnt]) {
-                winningOptionID = int16(cnt); // our first optionID is 1
+                winningOptionID = cnt;
                 break;
             }
         }
-        markets[marketFactHash].winningOptionID = winningOptionID;
-        emit MarketSettlement(marketFactHash);
+        markets[marketFactHash].data.winningOptionID = winningOptionID;
+        markets[marketFactHash].data.settled = true;
 
         // TODO remove this function and call settlement separately?
         settlementPayOut(
@@ -334,7 +444,7 @@ contract DigioptionsMarkets {
     function getNumUsersToPayout(
         bytes32 marketFactHash
     )
-        public
+        external
         view
         returns (uint256 numUsersToPayout)
     {
@@ -344,241 +454,266 @@ contract DigioptionsMarkets {
     function settlementPayOut(
         bytes32 marketFactHash,
         uint256 maxNumUsersToPayout
-    ) public
+    ) public // TODO make external (later)
     {
         Market storage market = markets[marketFactHash];
-        int16 winningOptionID = markets[marketFactHash].winningOptionID;
-        require(winningOptionID >= 0, "Market not yet settled.");
+        uint16 winningOptionID = markets[marketFactHash].data.winningOptionID;
+        require(markets[marketFactHash].data.settled == true, "Market not yet settled.");
 
-        for (uint256 idx = 0; idx < maxNumUsersToPayout; idx++) {
+        uint256 idx;
+        for (idx = 0; idx < maxNumUsersToPayout; idx++) {
             if (markets[marketFactHash].users.length == 0)
-                return;
+                break;
 
             address user = market.users[market.users.length - 1];
             market.users.length -= 1;
 
-            uint256 result = 0; // TODO rename result
-            for (uint16 optionID = 0; optionID <= market.marketBaseData.strikes.length; optionID++) {
-                if ((optionID == uint16(winningOptionID)) && (market.userState[user].positions[optionID] > int256(0))) {
-                    result += uint256(market.userState[user].positions[optionID]);
-                } else if ((optionID != uint16(winningOptionID)) && (market.userState[user].positions[optionID] < int256(0))) {
-// rename positions -> optionsCount?
-                    result += uint256(-market.userState[user].positions[optionID]);
-                }
-            }
-            market.userState[user].state = State.USER_PAYED_OUT;
-            liquidityUser[user] += result * PAYOUT_PER_OPTION;
-            // emit a PositionChange with negative (optionID+1) to signal final payout
-            // this is like a sell for PAYOUT_PER_OPTION
-            emit PositionChange(user, marketFactHash, block.timestamp, -(winningOptionID+1), PAYOUT_PER_OPTION, -market.userState[user].positions[uint16(winningOptionID)]); // TODO sign?
-        }
-    }
+            int256 minPosition;
+            int256 minPositionAfterTrade;
+            (minPosition, minPositionAfterTrade) = getMinPosition(
+                marketFactHash,
+                user,
+                0,
+                0
+            );
 
-    function orderExecuteTestList (
-        OrderOfferSigned[] orderOfferSignedList,
-        int256 sizeAcceptMax /* maximum for all supplied orderOfferSigned structs */
-    ) public view returns (int256[] sizeAcceptPossibleList)
-    {
-        // TODO this checks each orderOfferSigned structs independently !
-        sizeAcceptPossibleList = new int256[](orderOfferSignedList.length);
-        bytes32 orderHash;
-        int256 sizeAcceptPossible;
+            int256 result = market.userData[user].positions[winningOptionID].sub(minPosition);
 
-        for (uint256 orderOfferIdx=0; orderOfferIdx < orderOfferSignedList.length; orderOfferIdx++) {
-            (sizeAcceptPossible, orderHash) = orderExecuteTest(orderOfferSignedList[orderOfferIdx], sizeAcceptMax);
-            sizeAcceptPossibleList[orderOfferIdx] = sizeAcceptPossible;
+            market.userData[user].state = UserState.USER_PAYED_OUT;
+            liquidityUser[user] = liquidityUser[user].add(result.mul(PAYOUT_PER_NANOOPTION).castToUint());
         }
-        return sizeAcceptPossibleList;
+        if ((idx > 0) && (markets[marketFactHash].users.length == 0)) {
+            // emit event once if all users have been payed out
+            emit MarketSettlement(marketFactHash);
+        }
     }
 
     function orderExecuteTest (
-        OrderOfferSigned orderOfferSigned,
-        int256 sizeAccept
-    ) public view returns (int256 sizeAcceptPossible, bytes32 orderHash)
+        OrderOfferSigned memory orderOfferSigned,
+        uint256 sizeAccept // TODO rename to sizeAcceptMax?
+    ) public view returns (
+        uint256 sizeAcceptPossible,
+        bytes32 offerHash,
+        int256 liquidityOfferOwner, // only valid if sizeAcceptPossible > 0
+        int256 liquidityOfferTaker, // only valid if sizeAcceptPossible > 0
+        uint256 transactionFeeAmount // only valid if sizeAcceptPossible > 0
+    )
     {
         OrderOffer memory orderOffer = orderOfferSigned.orderOffer;
-        orderHash = keccak256(
+        bytes32 offerHash_ = keccak256(
             abi.encodePacked(
-                address(this), // this checks that the signature is valid for this contract
+                address(this), // this checks that the signature is valid only for this contract
                 orderOffer.marketFactHash,
                 orderOffer.optionID,
+                orderOffer.buy,
                 orderOffer.pricePerOption,
                 orderOffer.size,
                 orderOffer.orderID,
                 orderOffer.blockExpires,
-                orderOffer.addr
+                orderOffer.offerOwner
             )
         );
-        // TODO simplify
-        if ((orderOffer.size > 0) && (sizeAccept < 0)) {
-            if (offersAccepted[orderHash]-sizeAccept > orderOffer.size)
-                sizeAccept = offersAccepted[orderHash] - orderOffer.size;
-        } else if ((orderOffer.size < 0) && (sizeAccept > 0)) {
-            if (offersAccepted[orderHash]-sizeAccept < orderOffer.size)
-                sizeAccept = offersAccepted[orderHash] - orderOffer.size;
-        } else {
-            sizeAccept = 0;
-        }
+        if (offersAccepted[offerHash_].add(sizeAccept) > orderOffer.size)
+            sizeAccept = orderOffer.size.sub(offersAccepted[offerHash_]);
+
+        uint256 value = sizeAccept.mul(orderOffer.pricePerOption);
+        uint256 transactionFeeAmount_ = value.mul(markets[orderOffer.marketFactHash].marketBaseData.transactionFee).div(1 ether);
+
+        liquidityOfferOwner = getLiquidityAfterTrade(
+            orderOffer.buy,
+            orderOffer,
+            orderOffer.offerOwner,
+            sizeAccept,
+            value
+        );
+        liquidityOfferTaker = getLiquidityAfterTrade(
+            !orderOffer.buy,
+            orderOffer,
+            msg.sender,
+            sizeAccept,
+            value
+        ).sub(transactionFeeAmount_.castToInt());
 
         if (!(
                 (verify(
-                    orderHash,
+                    offerHash_,
                     orderOfferSigned.signature
-                ) == orderOffer.addr) &&
+                ) == orderOffer.offerOwner) &&
                 (orderOffer.optionID <= markets[orderOffer.marketFactHash].marketBaseData.strikes.length) &&
                 (block.number <= orderOffer.blockExpires) &&
-                (orderOffer.addr != msg.sender) && // TODO fix and remove this in the future?
-                checkLiquidity (
-                    orderOffer,
-                    orderOffer.addr,
-                    -sizeAccept
-                ) &&
-                checkLiquidity (
-                    orderOffer,
-                    msg.sender,
-                    sizeAccept
-                )
+                (block.number.add(12) >= orderOffer.blockExpires) &&
+                // offerTaker and offerOwner must not be the same (because liquidity is calculated seperately)
+                (orderOffer.offerOwner != msg.sender) &&
+                (liquidityOfferOwner >= int256(0)) &&
+                (liquidityOfferTaker >= int256(0))
             )) {
             sizeAccept = 0;
         }
-        return (sizeAccept, orderHash);
+        return (
+            sizeAccept,
+            offerHash_,
+            liquidityOfferOwner, // only valid if sizeAcceptPossible > 0
+            liquidityOfferTaker, // only valid if sizeAcceptPossible > 0
+            transactionFeeAmount_ // only valid if sizeAcceptPossible > 0
+        );
     }
 
-    function orderExecute (
-        OrderOfferSigned[] orderOfferSignedList,
-        int256 sizeAcceptMax /* maximum for all supplied orderOfferSigned structs */
-    ) public payable
+    function getLiquidityAfterTrade(
+        bool isBuyer,
+        OrderOffer memory orderOffer,
+        address userAddr,
+        uint256 sizeAccept,
+        uint256 value
+    ) internal view
+        returns (
+        int256 _liquidity
+    )
     {
-        liquidityAdd(); // ether may be supplied with order
+        int256 liquidity = liquidityUser[userAddr].castToInt();
+        int256 sizeAccept_;
+
+        if (! isBuyer) {
+            liquidity = liquidity.add(value.castToInt()); // seller gets money
+            sizeAccept_ = int256(0).sub(sizeAccept.castToInt());
+        } else {
+            liquidity = liquidity.sub(value.castToInt()); // buyer pays money
+            sizeAccept_ = sizeAccept.castToInt();
+        }
+
+        int256 minPositionBeforeTrade;
+        int256 minPositionAfterTrade;
+        (minPositionBeforeTrade, minPositionAfterTrade) = getMinPosition(
+            orderOffer.marketFactHash,
+            userAddr,
+            orderOffer.optionID,
+            sizeAccept_
+        );
+
+        liquidity = liquidity.add((minPositionAfterTrade.sub(minPositionBeforeTrade)).mul(PAYOUT_PER_NANOOPTION));
+
+        return liquidity;
+    }
+
+    // OrderOfferSigned array should contain only sell orders or only buys orders for the same optionID an marketFactHash (not mixed)
+    function orderExecute (
+        OrderOfferSigned[] memory orderOfferSignedList,
+        uint256 sizeAcceptMax /* maximum for all supplied orderOfferSigned structs */
+    ) public payable // this should be external (see https://github.com/ethereum/solidity/issues/5479)
+    {
+        uint256 sizeAcceptMax_ = sizeAcceptMax;
+        liquidityAdd(); // ether may be supplied with transaction/order
 
         for (uint256 orderOfferIdx=0; orderOfferIdx < orderOfferSignedList.length; orderOfferIdx++) {
             OrderOffer memory orderOffer = orderOfferSignedList[orderOfferIdx].orderOffer;
-            bytes32 orderHash;
-            int256 sizeAccept;
+            bytes32 offerHash;
+            uint256 sizeAcceptPossible;
 
-            (sizeAccept, orderHash) = orderExecuteTest (
+            address buyer; // buys options / money giver
+            address seller; // sells options / money getter
+            if (orderOffer.buy) {
+                buyer = orderOffer.offerOwner;
+                seller = msg.sender;
+            } else {
+                buyer = msg.sender;
+                seller = orderOffer.offerOwner;
+            }
+
+            int256 liquidityOfferOwner; // only valid if sizeAcceptPossible > 0
+            int256 liquidityOfferTaker; // only valid if sizeAcceptPossible > 0
+            uint256 transactionFeeAmount; // only valid if sizeAcceptPossible > 0
+            (
+                sizeAcceptPossible,
+                offerHash,
+                liquidityOfferOwner, // only valid if sizeAcceptPossible > 0
+                liquidityOfferTaker, // only valid if sizeAcceptPossible > 0
+                transactionFeeAmount // only valid if sizeAcceptPossible > 0
+            ) = orderExecuteTest (
                 orderOfferSignedList[orderOfferIdx],
-                sizeAcceptMax
+                sizeAcceptMax_
             );
+            if (sizeAcceptPossible != 0) {
 
-            if (sizeAccept != 0) {
-                sizeAcceptMax -= sizeAccept;
+                liquidityUser[orderOffer.offerOwner] = liquidityOfferOwner.castToUint();
+                liquidityUser[msg.sender] = liquidityOfferTaker.castToUint();
+                liquidityUser[owner] = liquidityUser[owner].add(transactionFeeAmount);
 
-                // TODO should we have a special order here
-                //markets[orderOffer.marketFactHash].userState[msg.sender].positions[orderOffer.optionID] += sizeAccept;
-                liquidityUser[msg.sender] = uint256(
-                    int256(liquidityUser[msg.sender]) + // TODO ugly /prevent overflow
-                    (-sizeAccept) * int256(orderOffer.pricePerOption) + // pays money
-                    maxLossOrMinWinChangeAfterTrade (
-                        orderOffer,
-                        msg.sender,
-                        sizeAccept
-                    )
-                );
+                // update positions
+                markets[orderOffer.marketFactHash].userData[buyer].positions[orderOffer.optionID] =
+                    markets[orderOffer.marketFactHash].userData[buyer].positions[orderOffer.optionID].add(int256(sizeAcceptPossible));
+                markets[orderOffer.marketFactHash].userData[seller].positions[orderOffer.optionID] =
+                    markets[orderOffer.marketFactHash].userData[seller].positions[orderOffer.optionID].sub(int256(sizeAcceptPossible));
 
-                //markets[orderOffer.marketFactHash].userState[orderOffer.addr].positions[orderOffer.optionID] -= sizeAccept;
-                liquidityUser[orderOffer.addr] = uint256(
-                    int256(liquidityUser[orderOffer.addr]) + // TODO ugly /prevent overflow
-                    sizeAccept * int256(orderOffer.pricePerOption) + // gets money
-                    maxLossOrMinWinChangeAfterTrade (
-                        orderOffer,
-                        orderOffer.addr,
-                        -sizeAccept
-                    )
-                );
-                // update positions after we have called maxLossOrMinWinChangeAfterTrade()
-                markets[orderOffer.marketFactHash].userState[orderOffer.addr].positions[orderOffer.optionID] -= sizeAccept;
-                markets[orderOffer.marketFactHash].userState[msg.sender].positions[orderOffer.optionID] += sizeAccept;
-
-                offersAccepted[orderHash] -= sizeAccept; // remember that some of market makers signed offers are already used
+                // remember that (some amount of) the offers is taken
+                offersAccepted[offerHash] = offersAccepted[offerHash].add(sizeAcceptPossible);
 
                 // remember user for final settlement calculation
-                if (markets[orderOffer.marketFactHash].userState[msg.sender].state== State.USER_NONE) {
-                    markets[orderOffer.marketFactHash].userState[msg.sender].state = State.USER_EXISTS;
+                if (markets[orderOffer.marketFactHash].userData[msg.sender].state== UserState.USER_NONE) {
+                    markets[orderOffer.marketFactHash].userData[msg.sender].state = UserState.USER_EXISTS;
                     markets[orderOffer.marketFactHash].users.push(msg.sender);
+                    userMarkets[msg.sender].push(orderOffer.marketFactHash);
                 }
-                if (markets[orderOffer.marketFactHash].userState[orderOffer.addr].state == State.USER_NONE) {
-                    markets[orderOffer.marketFactHash].userState[orderOffer.addr].state = State.USER_EXISTS;
-                    markets[orderOffer.marketFactHash].users.push(orderOffer.addr);
+                if (markets[orderOffer.marketFactHash].userData[orderOffer.offerOwner].state == UserState.USER_NONE) {
+                    markets[orderOffer.marketFactHash].userData[orderOffer.offerOwner].state = UserState.USER_EXISTS;
+                    markets[orderOffer.marketFactHash].users.push(orderOffer.offerOwner);
+                    userMarkets[orderOffer.offerOwner].push(orderOffer.marketFactHash);
                 }
-
 
                 emit PositionChange(
-                    msg.sender,
+                    buyer,
                     orderOffer.marketFactHash,
                     block.timestamp,
-                    int16(orderOffer.optionID),
+                    true, // buy
+                    orderOffer.optionID,
                     orderOffer.pricePerOption,
-                    sizeAccept
+                    sizeAcceptPossible,
+                    offerHash
                 );
                 emit PositionChange(
-                    orderOffer.addr,
+                    seller,
                     orderOffer.marketFactHash,
                     block.timestamp,
-                    int16(orderOffer.optionID),
+                    false, // buy
+                    orderOffer.optionID,
                     orderOffer.pricePerOption,
-                    -sizeAccept
+                    sizeAcceptPossible,
+                    bytes32(0)
                 );
 
+                sizeAcceptMax_ = sizeAcceptMax_.sub(sizeAcceptPossible);
             }
         }
     }
 
-    function maxLossOrMinWinChangeAfterTrade (
-        OrderOffer orderOffer,
-        address userAddr,
-        int256 positionChange
-    ) public view returns (int256 maxLossOrMinWin) // TODO private?
-    {
-// a negative value means that (more) liquidity has to be blocked, while
-// a positive value means that ..
-        return
-            maxLossOrMinWinAfterTrade( // after trade
-                orderOffer.marketFactHash,
-                userAddr,
-                orderOffer.optionID,
-                positionChange
-            ) -
-            maxLossOrMinWinAfterTrade( // before trade
-                orderOffer.marketFactHash,
-                userAddr,
-                0,
-                0
-            );
-    }
-
-    function maxLossOrMinWinAfterTrade (
+    function getMinPosition (
         bytes32 marketFactHash,
         address userAddr,
+        /* optional to calc the minimal position after a change */
         uint16 optionID,
         int256 positionChange
-    ) public view returns (int256 maxLossOrMinWin)
+    ) internal view returns (int256 minPositionBeforeTrade_, int256 minPositionAfterTrade_)
     {
-// if negative liquidity has to be blocked,
-// if positive, there is a win in any case
-        int256 minPosition = int256(~((uint256(1) << 255))); // INT256_MAX
-//int256 constant INT256_MIN = int256((uint256(1) << 255));
-//int256 constant INT256_MAX = int256(~((uint256(1) << 255)));
+        int256 minPositionBeforeTrade = int256(~((uint256(1) << 255))); // INT256_MAX
+        int256 minPositionAfterTrade = int256(~((uint256(1) << 255))); // INT256_MAX
 
-        //if (markets[marketFactHash].userState[userAddr].paidOut) // TODO maybe not ok here, but where?
-        //    return 0;
-// TODO rename s somehow
         for (uint16 s = 0; s <= markets[marketFactHash].marketBaseData.strikes.length; s++) {
 
-            int256 position = markets[marketFactHash].userState[userAddr].positions[s];
-            if (s == optionID)
-                position += positionChange;
+            int256 position = markets[marketFactHash].userData[userAddr].positions[s];
+            if (position < minPositionBeforeTrade)
+                minPositionBeforeTrade = position;
 
-            if (position < minPosition)
-                minPosition = position;
+            if (s == optionID)
+                position = position.add(positionChange);
+
+            if (position < minPositionAfterTrade)
+                minPositionAfterTrade = position;
         }
-        return minPosition * int256(PAYOUT_PER_OPTION);
+        return (minPositionBeforeTrade, minPositionAfterTrade);
     }
 
     /* internal functions */
     function verify(
         bytes32 message,
-        Signature signature
+        Signature memory signature
     ) internal pure returns (address addr)
     {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
@@ -596,25 +731,5 @@ contract DigioptionsMarkets {
         );
         return signer;
     }
-
-    function checkLiquidity (
-        OrderOffer orderOffer,
-        address userAddr,
-        int256 sizeAccept
-    ) internal view returns (bool success)
-    {
-        return (
-            (
-                int256(liquidityUser[userAddr]) +
-                maxLossOrMinWinChangeAfterTrade (
-                    orderOffer,
-                    userAddr,
-                    sizeAccept
-                ) -
-                sizeAccept * int256(orderOffer.pricePerOption)
-            ) >= 0
-        );
-    }
-
 
 }
