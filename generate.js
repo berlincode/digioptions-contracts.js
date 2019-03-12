@@ -8,10 +8,13 @@
 //
 // except that it wraps the output into js modules (CommonJS, AMD, Browser)
 
-const file_bin = 'digioptions_markets_bin.js';
-const file_abi = 'digioptions_markets_abi.js';
-const file = 'Digioptions.sol';
-const contractName = 'DigiOptions';
+const files = [
+  'contracts/DigiOptions.sol',
+  'contracts/DigiOptionsMarketLister.sol',
+  'contracts/DigiOptionsBaseInterface.sol',
+  'contracts/SafeCast.sol',
+  'contracts/SafeMath.sol'
+];
 
 var fs = require('fs');
 var solc = require('solc');
@@ -43,15 +46,16 @@ var wrap_data_into_module = function(fname, varname, data){
 
 };
 
-if (fs.existsSync(file_bin))
-  fs.unlinkSync(file_bin);
-
-if (fs.existsSync(file_abi))
-  fs.unlinkSync(file_abi);
-
+var unlink = function(files){
+  for (let file of files){
+    if (fs.existsSync(file))
+      fs.unlinkSync(file);
+  }
+};
 
 var input = {};
-input[file] = {content: fs.readFileSync(file, 'utf8')};
+for (let file of files)
+  input[file] = {content: fs.readFileSync(file, 'utf8')};
 
 var output = JSON.parse(solc.compileStandardWrapper(JSON.stringify({
   language: 'Solidity',
@@ -71,11 +75,21 @@ var output = JSON.parse(solc.compileStandardWrapper(JSON.stringify({
 if (typeof(output.errors) !== 'undefined')
   console.log(output.errors);
 
-try {
+var generate = function(filenameSol, contractName, baseName){
+  const file_bin = baseName + '_bin.js';
+  const file_abi = baseName + '_abi.js';
+
+  unlink([file_abi, file_bin]);
   // bytecode is wrapped inside quotes so that it is json compatible (and a json-fetch from web app works)
-  wrap_data_into_module(file_bin, 'digioptions_markets_bin', '"' + output.contracts[file][contractName].evm.bytecode.object + '"');
-  wrap_data_into_module(file_abi, 'digioptions_markets_abi', JSON.stringify(output.contracts[file][contractName].abi));
-  console.log('writing contract abi/bin of source', file);
+  wrap_data_into_module(file_bin, baseName + '_bin', '"' + output.contracts[filenameSol][contractName].evm.bytecode.object + '"');
+  wrap_data_into_module(file_abi, baseName + '_abi', JSON.stringify(output.contracts[filenameSol][contractName].abi));
+};
+
+
+try {
+  generate('contracts/DigiOptions.sol', 'DigiOptions', 'digioptions_markets');
+  generate('contracts/DigiOptionsMarketLister.sol', 'DigioptionsMarketLister', 'digioptions_market_lister');
+  console.log('wrote contract abi/bin successfully');
 } catch(err) {
-  console.log('ERROR: failed to write contract abi/bin of source:', file, err);
+  console.log('ERROR: failed to write contract abi/bin:', err);
 }

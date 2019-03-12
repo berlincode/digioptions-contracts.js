@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.41.0",
+  "version": "0.42.0",
   "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "./generate.js",
-    "solium": "sed -e s/calldata/memory/g Digioptions.sol > Digioptions.sol.solium && solium --file Digioptions.sol.solium",
+    "ethlint": "solium --file DigiOptions.sol && solium --file DigiOptionsMarketLister.sol",
     "eslint": "eslint ./*.js ./test*/*.js",
     "test": "mocha --bail test/test_createmarket.js"
   },
@@ -19,7 +19,9 @@
     "index.js",
     "digioptions_markets_abi.js",
     "digioptions_markets_bin.js",
-    "Digioptions.sol",
+    "digioptions_market_lister_abi.js",
+    "digioptions_market_lister_bin.js",
+    "contracts/*.sol",
     "LICENSE",
     "README"
   ],
@@ -33,17 +35,14 @@
     "ethereum"
   ],
   "dependencies": {
-    "typedarray-to-buffer": "^3.1.5",
-    "web3": "^1.0.0-beta.36",
-    "yaeti": "^1.0.2"
+    "web3": "1.0.0-beta.48"
   },
   "devDependencies": {
-    "eslint": "^5.9.0",
+    "eslint": "^5.15.1",
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
-    "ganache-core": "^2.3.1",
-    "mocha": "^5.2.0",
-    "solc": "0.5.0",
-    "solium": "^1.1.8",
-    "source-map-support": "^0.5.9"
+    "ganache-core": "2.5.3",
+    "mocha": "^6.0.2",
+    "solc": "0.5.5",
+    "ethlint": "^1.2.3"
   }
 }

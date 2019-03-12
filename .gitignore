@@ -1,5 +1,5 @@
 node_modules
 README.html
 *.custom*
-*.solium
+_*
 npm-debug.log

@@ -1,11 +1,11 @@
 /*
- Digital Options Exchange Contract used by https://www.digioptions.com
+ User Driven Option Markets Contract used by https://www.digioptions.com
 
- Version 0.41.0
+ Version 0.41.2
 
- Copyright (c) [digioptions.com](http://www.digioptions.com)
+ Copyright (c) [www.digioptions.com](https://www.digioptions.com)
 
- Designed to work with signatures from [factsigner.com](https://factsigner.com)
+ Designed to work with signatures from [www.factsigner.com](https://www.factsigner.com)
 
  Public repository:
  https://github.com/berlincode/digioptions-contracts.js
@@ -15,83 +15,11 @@
 
 */
 
-pragma solidity 0.5.0;
+import "./SafeMath.sol";
+import "./SafeCast.sol";
+
+pragma solidity 0.5.5;
 pragma experimental ABIEncoderV2;
-
-library SafeMath {
-
-    /* unsigned integer */
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-
-    /* signed integer */
-    function mul(int256 a, int256 b) internal pure returns (int256) {
-        // Gas optimization: this is cheaper than asserting 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
-        if (a == 0) {
-            return 0;
-        }
-        int256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    function sub(int256 a, int256 b) internal pure returns (int256) {
-        int256 c = a - b;
-        assert((b >= 0 && c <= a) || (b < 0 && c > a));
-        return c;
-    }
-
-    function add(int256 a, int256 b) internal pure returns (int256) {
-        int256 c = a + b;
-        assert((b >= 0 && c >= a) || (b < 0 && c < a));
-        return c;
-    }
-}
-
-
-library SafeCast {
-    /**
-     * Cast unsigned a to signed a.
-     */
-    function castToInt(uint256 a) internal pure returns(int256) {
-        assert(a < (1 << 255));
-        return int(a);
-    }
-
-    /**
-     * Cast signed a to unsigned a.
-     */
-    function castToUint(int256 a) internal pure returns(uint256) {
-        assert(a >= 0);
-        return uint(a);
-    }
-}
 
 
 contract DigiOptions {
@@ -101,9 +29,9 @@ contract DigiOptions {
     using SafeMath for int256;
 
     /* public variables / constants */
-    uint256 public version = (
+    uint256 public constant CONTRACT_VERSION = (
         (0 << 32) + /* major */
-        (41 << 16) + /* minor */
+        (42 << 16) + /* minor */
         0 /* bugfix */
     );
     //each nanoOption is worth 1000000000 wei in case of win,
@@ -118,9 +46,10 @@ contract DigiOptions {
 
     enum UserState {USER_NONE, USER_EXISTS, USER_PAYED_OUT}
 
-    struct UserData {
-        UserState state; // just to remember which user was alweday added
+    struct UserData { // TODO rename
+        UserState state; // just to remember which user was already added
         mapping(uint16 => int256) positions;
+        uint256 feePayed;
     }
 
     struct MarketBaseData {
@@ -233,7 +162,9 @@ contract DigiOptions {
         MarketBaseData memory marketBaseData,
         bool testMarket,
         Signature memory signature
-    ) public onlyOwner // this should be external (see https://github.com/ethereum/solidity/issues/5479)
+    ) public
+    onlyOwner // this should be external (see https://github.com/ethereum/solidity/issues/5479)
+    returns (bytes32 _marketFactHash)
     {
         bytes32 marketFactHash = keccak256(
             abi.encodePacked(
@@ -309,7 +240,8 @@ contract DigiOptions {
             // winningOptionID is only valid if settled == true
             winningOptionID: 0,
             settled: false,
-            typeDuration: typeDuration
+            typeDuration: typeDuration//,
+            //feePayed: 0
         });
 
         newMarket.marketBaseData = marketBaseData;
@@ -319,6 +251,7 @@ contract DigiOptions {
         market.previous = marketFactHash;
 
         emit MarketCreate(marketFactHash, marketBaseData.underlying, typeDuration);
+        return marketFactHash;
     }
 
     function getMarketDataList (
@@ -598,10 +531,9 @@ contract DigiOptions {
     function orderExecute (
         OrderOfferSigned[] memory orderOfferSignedList,
         uint256 sizeAcceptMax /* maximum for all supplied orderOfferSigned structs */
-    ) public payable // this should be external (see https://github.com/ethereum/solidity/issues/5479)
+    ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
     {
         uint256 sizeAcceptMax_ = sizeAcceptMax;
-        liquidityAdd(); // ether may be supplied with transaction/order
 
         for (uint256 orderOfferIdx=0; orderOfferIdx < orderOfferSignedList.length; orderOfferIdx++) {
             OrderOffer memory orderOffer = orderOfferSignedList[orderOfferIdx].orderOffer;
