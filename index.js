@@ -41,18 +41,18 @@
       {t: 'uint256', v: order.blockExpires},
       // we do not need the address for the order itself, since the address is impliclitly
       // available via the signature
-      // but if the addess is contained, we can use this hash for order tracking too
+      // but if the address is contained, we can use this hash for order tracking too
       {t: 'address', v: order.offerOwner}
     );
   };
 
-  var signOrder = function(web3, order, address) {
+  var signOrder = function(web3, privateKey, order) {
     var orderOfferHash = orderOfferToHash(order);
     // sign order (add r, s, v)
-    return factsigner.sign(web3, address, orderOfferHash)
-      .then(function(sig){
-        return Object.assign({}, order, sig);
-      });
+    var sig = factsigner.sign(web3, privateKey, orderOfferHash);
+    var orderSigned = Object.assign({}, order, sig);
+    orderSigned.v = parseInt(orderSigned.v); // TODO convert from '0x1c' to int
+    return orderSigned;
   };
 
   var versionToInt = function(ver){

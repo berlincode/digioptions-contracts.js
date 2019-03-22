@@ -18,7 +18,7 @@
 import "./SafeMath.sol";
 import "./SafeCast.sol";
 
-pragma solidity 0.5.5;
+pragma solidity 0.5.6;
 pragma experimental ABIEncoderV2;
 
 

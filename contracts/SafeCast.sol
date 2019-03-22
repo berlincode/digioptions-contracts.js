@@ -1,5 +1,3 @@
-pragma solidity 0.5.5;
-
 library SafeCast {
     /**
      * Cast unsigned a to signed a.
