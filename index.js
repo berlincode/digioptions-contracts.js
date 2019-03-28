@@ -19,7 +19,7 @@
   }else {
     // Global (browser)
     root.digioptionsContracts = factory(
-      root.Web3, // we expect that the whole Web3 was loaded an use only the utils from it
+      root.web3, // we expect that the whole Web3 was loaded an use only the utils from it
       root.factsigner,
       root.digioptions_markets_abi,
       root.digioptions_market_lister_abi
