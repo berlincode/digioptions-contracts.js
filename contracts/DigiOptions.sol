@@ -367,11 +367,16 @@ contract DigiOptions {
         markets[marketFactHash].data.winningOptionID = winningOptionID;
         markets[marketFactHash].data.settled = true;
 
-        // TODO remove this function and call settlement separately?
-        settlementPayOut(
-            marketFactHash,
-            maxNumUsersToPayout
-        );
+        if ((markets[marketFactHash].users.length == 0)) {
+            // emit event once
+            emit MarketSettlement(marketFactHash);
+        } else {
+            // TODO remove this function and call settlement separately?
+            settlementPayOut(
+                marketFactHash,
+                maxNumUsersToPayout
+            );
+	}
     }
 
     function getNumUsersToPayout(
