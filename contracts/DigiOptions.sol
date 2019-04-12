@@ -32,7 +32,7 @@ contract DigiOptions {
     uint256 public constant CONTRACT_VERSION = (
         (0 << 32) + /* major */
         (42 << 16) + /* minor */
-        0 /* bugfix */
+        2 /* bugfix */
     );
     //each nanoOption is worth 1000000000 wei in case of win,
     // so one whole option is worth 1 ether in case of win

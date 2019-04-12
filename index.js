@@ -99,7 +99,7 @@
     contractVersion: {
       major: 0,
       minor: 42,
-      bugfix: 0
+      bugfix: 2
     },
     userState: {
       USER_NONE: 0,
