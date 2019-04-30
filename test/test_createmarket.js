@@ -8,8 +8,8 @@ const assert = require('assert');
 const factsigner = require('factsigner');
 
 const digioptionsContracts = require('../index.js');
-const contractBytecode = require('../digioptions_markets_bin.js');
-const contractBytecode2 = require('../digioptions_market_lister_bin.js'); // TODO name
+const contractBytecode = require('../digioptions_markets_bin.js')();
+const contractBytecode2 = require('../digioptions_market_lister_bin.js')(); // TODO name
 
 //before('initialize variables', function(done) {
 //  done();
@@ -92,7 +92,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
   });
 
   it('create contract', async function() {
-    const contract = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketsAbi);
+    const contract = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketsAbi());
     this.marketsContract = await contract.deploy(
       {
         data: contractBytecode
@@ -107,7 +107,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
     assert.notEqual(this.marketsContract.options.address, undefined);
 
     // now deploy our market lister contract
-    const contractMarketLister = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketListerAbi);
+    const contractMarketLister = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketListerAbi());
     this.contractInstanceMarketLister = await contractMarketLister.deploy(
       {
         data: contractBytecode2,

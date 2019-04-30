@@ -39,7 +39,10 @@ var wrap_data_into_module = function(fname, varname, data){
   }
 })(this, function(){
 
-  return ` + data + `; // eslint-disable-line quotes
+  var data = ` + data + `; // eslint-disable-line quotes
+  return function(){
+    return data;
+  };
 });
 `,
     'utf8');
