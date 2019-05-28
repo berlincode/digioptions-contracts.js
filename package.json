@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.46.0",
+  "version": "0.46.1",
   "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "SEE LICENSE IN LICENSE",
@@ -37,12 +37,12 @@
     "ethereum"
   ],
   "dependencies": {
+    "factsigner": "git+https://github.com/berlincode/factsigner.git",
     "patch-package": "6.0.5",
     "web3": "1.0.0-beta.55"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "factsigner": "git+https://github.com/berlincode/factsigner.git",
     "ganache-core": "2.5.5",
     "mocha": "^6.0.2",
     "solc": "0.5.8",
