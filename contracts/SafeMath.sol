@@ -2,7 +2,9 @@
  * @title SafeMath
  * @dev Unsigned math operations with safety checks that revert on error
  */
-pragma solidity ^0.5.6;
+pragma solidity ^0.5.8;
+
+
 library SafeMath {
     /**
      * @dev Multiplies two unsigned integers, reverts on overflow.

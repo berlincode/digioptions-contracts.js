@@ -27,17 +27,50 @@
   }
 }(this, function (Web3, factsigner, digioptionsMarketsAbi, digioptionsMarketListerAbi) {
 
-  var web3 = new Web3('http://localhost:8545'); // TODO dummy
+  var web3 = new Web3();
+
+  /* similar to factsigner's factHash() but with adding additional data to hash */
+  function marketHash(marketBaseData){
+
+    var args = [
+      {t: 'uint8', v: marketBaseData.baseUnitExp},
+      {t: 'bytes32', v: marketBaseData.underlying},
+      {t: 'int8', v: marketBaseData.ndigit},
+      {t: 'uint32', v: marketBaseData.objectionPeriod},
+      {t: 'uint40', v: marketBaseData.expirationDatetime},
+
+      {t: 'uint8', v: marketBaseData.typeDuration},
+      {t: 'address', v: marketBaseData.feeTaker0},
+      {t: 'address', v: marketBaseData.feeTaker1},
+      {t: 'address', v: marketBaseData.signerAddr},
+      {t: 'uint64', v: marketBaseData.transactionFee0},
+      {t: 'uint64', v: marketBaseData.transactionFee1}
+    ];
+  
+    // take special care of out strikes int128 array 
+    // see: https://github.com/ethereumjs/ethereumjs-abi/issues/27
+    // see: https://github.com/ethereumjs/ethereumjs-abi/pull/47
+    marketBaseData.strikes.map(
+      function(val){
+        // repack out int128 as bytes32
+        //args.push({t: 'bytes32', v: web3.utils.leftPad(addr, 64)val});
+        args.push({t: 'int256', v: val});
+        //args.push({t: 'int128', v: val});
+      }
+    );
+
+    return web3.utils.soliditySha3.apply(this, args);
+  }
 
   var orderOfferToHash = function(order){
     return web3.utils.soliditySha3(
       {t: 'address', v: order.marketsAddr},
-      {t: 'bytes32', v: order.marketFactHash},
+      {t: 'bytes32', v: order.marketHash},
       {t: 'uint16', v: order.optionID},
       {t: 'bool', v: order.buy},
       {t: 'uint256', v: order.price},
       {t: 'int256', v: order.size},
-      {t: 'uint256', v: order.orderID},
+      {t: 'uint256', v: order.offerID},
       {t: 'uint256', v: order.blockExpires},
       // we do not need the address for the order itself, since the address is impliclitly
       // available via the signature
@@ -85,6 +118,7 @@
   return {
     digioptionsMarketsAbi: digioptionsMarketsAbi,
     digioptionsMarketListerAbi: digioptionsMarketListerAbi,
+    marketHash: marketHash,
     orderOfferToHash: orderOfferToHash,
     signOrder: signOrder,
     optionPayout: 1000000000, // TODO remove payout per successful option (in wei)
@@ -96,15 +130,33 @@
     versionToInt: versionToInt,
     versionFromInt: versionFromInt,
     versionToString: versionToString,
-    contractVersion: {
+    versionMarketLister: {
       major: 0,
-      minor: 42,
-      bugfix: 2
+      minor: 46,
+      bugfix: 0
+    },
+    versionMarkets: {
+      major: 0,
+      minor: 46,
+      bugfix: 0
     },
     userState: {
       USER_NONE: 0,
       USER_EXISTS: 1,
       USER_PAYED_OUT: 2
+    },
+    contractType: {
+      CONTRACT_UNKNOWN: 0,
+      CONTRACT_DIGIOPTIONSMARKETS: 1,
+      CONTRACT_DIGIOPTIONSMARKETLISTER: 2
+    },
+    typeDuration: {
+      0: 'yearly',
+      1: 'monthly',
+      2: 'weekly',
+      3: 'daily',
+      4: 'hourly',
+      5: 'short term' // TODO better name
     }
   };
 }));
