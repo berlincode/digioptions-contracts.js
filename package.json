@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.46.1",
+  "version": "0.46.2",
   "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "SEE LICENSE IN LICENSE",
@@ -17,15 +17,15 @@
     "postinstall": "patch-package"
   },
   "files": [
-    "index.js",
-    "digioptions_markets_abi.js",
-    "digioptions_markets_bin.js",
-    "digioptions_market_lister_abi.js",
-    "digioptions_market_lister_bin.js",
+    "js/index.js",
+    "js/digioptions_markets_abi.js",
+    "js/digioptions_markets_bin.js",
+    "js/digioptions_market_lister_abi.js",
+    "js/digioptions_market_lister_bin.js",
     "contracts/*.sol",
     "patches/*.patch",
     "LICENSE",
-    "README"
+    "README.md"
   ],
   "repository": {
     "type": "git",
