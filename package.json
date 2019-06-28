@@ -1,7 +1,7 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.46.2",
-  "description": "solidity contract used by the ethereum based digital option exchange digioptions.com",
+  "version": "0.47.0",
+  "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "SEE LICENSE IN LICENSE",
   "main": "js/index.js",
@@ -32,20 +32,21 @@
     "url": "git+https://github.com/berlincode/digioptions-contracts.js.git"
   },
   "keywords": [
-    "option exchange",
+    "option markets",
+    "user-driven",
     "smart contract",
     "ethereum"
   ],
   "dependencies": {
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
-    "patch-package": "6.0.5",
+    "patch-package": "6.1.2",
     "web3": "1.0.0-beta.55"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "ganache-core": "2.5.5",
+    "ganache-core": "2.5.6",
     "mocha": "^6.0.2",
-    "solc": "0.5.8",
+    "solc": "0.5.10",
     "ethlint": "^1.2.4"
   }
 }

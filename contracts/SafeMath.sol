@@ -2,7 +2,7 @@
  * @title SafeMath
  * @dev Unsigned math operations with safety checks that revert on error
  */
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.10;
 
 
 library SafeMath {

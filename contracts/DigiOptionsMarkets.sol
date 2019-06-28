@@ -13,7 +13,7 @@
 
 */
 
-pragma solidity 0.5.8;
+pragma solidity 0.5.10;
 pragma experimental ABIEncoderV2;
 
 import "./DigiOptionsBaseInterface.sol";
@@ -357,7 +357,6 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         uint256 maxNumUsersToPayout
     ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
     {
-        require(markets[marketHash].data.settled == false, "Market already settled.");
         Market storage market = markets[marketHash];
 
         /* anybody with access to the signed value (from signerAddr) can settle the market */
@@ -375,6 +374,10 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
             ) == markets[marketHash].marketBaseData.signerAddr,
             "Signature invalid."
         );
+
+        // just return if already settled
+        if (markets[marketHash].data.settled)
+            return;
 
         uint16 winningOptionID = uint16(market.marketBaseData.strikes.length);
         for (uint16 cnt = 0; cnt < market.marketBaseData.strikes.length; cnt++) {

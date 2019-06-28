@@ -13,7 +13,7 @@
 
 */
 
-pragma solidity 0.5.8;
+pragma solidity 0.5.10;
 pragma experimental ABIEncoderV2;
 
 import "./DigiOptionsBaseInterface.sol";
@@ -21,7 +21,7 @@ import "./DigiOptionsMarkets.sol";
 import "./SafeMath.sol";
 
 
-contract DigioptionsMarketLister is DigiOptionsBaseInterface {
+contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     using SafeMath for uint256;
     using SafeMath for int256;
 
@@ -60,7 +60,9 @@ contract DigioptionsMarketLister is DigiOptionsBaseInterface {
     mapping(bytes32 => MarketBest) internal marketsBest;
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function.");
+        // TODO
+        //require(msg.sender == owner, "Only owner can call this function.");
+        require((msg.sender == owner) || (tx.origin == owner), "Only owner can call this function.");
         _;
     }
 
@@ -236,27 +238,6 @@ contract DigioptionsMarketLister is DigiOptionsBaseInterface {
                 marketBest.transactionFee0 = marketBaseData.transactionFee0;
             }
         }
-    }
-
-    // TODO: remove this function in the future
-    function createMarket (
-        DigiOptionsMarkets.MarketBaseData memory marketBaseData,
-        bool testMarket,
-        DigiOptionsMarkets.Signature memory signature
-    ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
-    returns (bytes32 _marketHash)
-    {
-        bytes32 marketHash;
-        marketHash = digiOptionsMarkets.createMarket(
-            marketBaseData,
-            testMarket,
-            signature
-        );
-        registerMarket(
-            marketHash,
-            testMarket
-        );
-        return (marketHash);
     }
 
     // TODO use this?

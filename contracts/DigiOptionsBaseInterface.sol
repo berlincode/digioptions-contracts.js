@@ -1,4 +1,4 @@
-pragma solidity 0.5.8;
+pragma solidity 0.5.10;
 pragma experimental ABIEncoderV2;
 
 /*
@@ -79,12 +79,4 @@ contract DigiOptionsBaseInterface {
         external
         view
         returns (MarketData[] memory marketList);
-
-    function createMarket (
-        MarketBaseData memory marketBaseData,
-        bool testMarket,
-        Signature memory signature
-    ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
-        returns (bytes32 _marketHash);
-
 }

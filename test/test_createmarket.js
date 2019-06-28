@@ -8,8 +8,12 @@ const assert = require('assert');
 const factsigner = require('factsigner');
 
 const digioptionsContracts = require('../js/index.js');
+
 const contractMarketsBytecode = require('../js/digioptions_markets_bin.js')();
 const contractMarketListerBytecode = require('../js/digioptions_market_lister_bin.js')();
+const contractMetaBytecode = require('../js/digioptions_meta_bin.js')();
+
+const digioptionsMetaAbi = require('../js/digioptions_meta_abi.js')();
 
 //before('initialize variables', function(done) {
 //  done();
@@ -36,9 +40,7 @@ async function setup(){
   return new Web3(ganache.provider(options));
 }
 
-describe('Test createMarket() and getMarketDataList()', function() {
-  this.timeout(5*1000);
-
+function loadBeforeAndAfter() {
   before('setup', async function() {
     var that = this;
     this.web3 = await setup(this.web3);
@@ -117,6 +119,13 @@ describe('Test createMarket() and getMarketDataList()', function() {
     this.marketHash2 = digioptionsContracts.marketHash(this.market2);
     this.marketHash3 = digioptionsContracts.marketHash(this.market3);
   });
+}
+
+
+describe('Test createMarket() and getMarketDataList()', function() {
+  this.timeout(5*1000);
+
+  loadBeforeAndAfter();
 
   it('create contract', async function() {
     let contract;
@@ -134,7 +143,7 @@ describe('Test createMarket() and getMarketDataList()', function() {
     );
     assert.notEqual(this.marketsContract.options.address, undefined);
 
-    // now deploy our market lister contract
+    // deploy our market lister contract
     contract = new this.web3.eth.Contract(digioptionsContracts.digioptionsMarketListerAbi());
     this.marketListerContract = await contract.deploy(
       {
@@ -152,7 +161,23 @@ describe('Test createMarket() and getMarketDataList()', function() {
         }
       );
     assert.notEqual(this.marketListerContract.options.address, undefined);
-
+ 
+    // now deploy the meta contract
+    contract = new this.web3.eth.Contract(digioptionsMetaAbi);
+    this.metaContract = await contract.deploy(
+      {
+        data: contractMetaBytecode
+      }
+    )
+      .send(
+        {
+          gas: 4000000,
+          //gasPrice: '30000000000000',
+          from: this.accountOwnerAddress
+        }
+      );
+    assert.notEqual(this.metaContract.options.address, undefined);
+ 
     // should contain 0 markets
     let marketDataList;
 
@@ -169,24 +194,34 @@ describe('Test createMarket() and getMarketDataList()', function() {
     let marketDataBefore = await this.marketsContract.methods.getMarketData(this.marketHash0).call();
     assert.equal(parseInt(marketDataBefore.marketBaseData.expirationDatetime), 0); /* market exists if expirationDatetime != 0) */
 
-    // TODO pass only this.market0 to createMarket()
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market0.expirationDatetime,
-        underlying: this.market0.underlying,
-        feeTaker0: this.market0.feeTaker0,
-        feeTaker1: this.market0.feeTaker1,
-        transactionFee0: this.market0.transactionFee0.toString(),
-        transactionFee1: this.market0.transactionFee1.toString(),
-        ndigit: this.market0.ndigit,
-        baseUnitExp: this.market0.baseUnitExp, /* typically 18 */
-        typeDuration: this.market0.typeDuration,
-        objectionPeriod: this.market0.objectionPeriod,
-        strikes: this.market0.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
+    await this.metaContract.methods.createRegisterAndSettlement(
+      [ 
+        // create and register
+        {
+          digiOptionsMarkets: this.marketsContract.options.address,
+          digiOptionsMarketLister: [this.marketListerContract.options.address],
+          // TODO pass only this.market0 to createMarket()
+          marketBaseData: {
+            expirationDatetime: this.market0.expirationDatetime,
+            underlying: this.market0.underlying,
+            feeTaker0: this.market0.feeTaker0,
+            feeTaker1: this.market0.feeTaker1,
+            transactionFee0: this.market0.transactionFee0.toString(),
+            transactionFee1: this.market0.transactionFee1.toString(),
+            ndigit: this.market0.ndigit,
+            baseUnitExp: this.market0.baseUnitExp, /* typically 18 */
+            typeDuration: this.market0.typeDuration,
+            objectionPeriod: this.market0.objectionPeriod,
+            strikes: this.market0.strikes.map(function(strikeBn){return strikeBn.toString();}),
+            signerAddr: this.accountSign.address,
+          },
+          testMarket: false,
+          signature: signature,
+        },
+      ],
+      [
+        // settlement
+      ]
     ).send({
       gas: 3000000,
       from: this.accountOwnerAddress
@@ -209,23 +244,34 @@ describe('Test createMarket() and getMarketDataList()', function() {
 
   it('add market #1', async function() {
     let signature = await factsigner.sign(this.web3, this.accountSign.privateKey, this.factHash1);
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market1.expirationDatetime,
-        underlying: this.market1.underlying,
-        feeTaker0: this.market1.feeTaker0,
-        feeTaker1: this.market1.feeTaker1,
-        transactionFee0: this.market1.transactionFee0.toString(),
-        transactionFee1: this.market1.transactionFee1.toString(),
-        ndigit: this.market1.ndigit,
-        baseUnitExp: this.market1.baseUnitExp, /* typically 18 */
-        typeDuration: this.market1.typeDuration,
-        objectionPeriod: this.market1.objectionPeriod,
-        strikes: this.market1.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
+    await this.metaContract.methods.createRegisterAndSettlement(
+      [ 
+        // create and register
+        {
+          digiOptionsMarkets: this.marketsContract.options.address,
+          digiOptionsMarketLister: [this.marketListerContract.options.address],
+          // TODO pass only this.market0 to createMarket()
+          marketBaseData: {
+            expirationDatetime: this.market1.expirationDatetime,
+            underlying: this.market1.underlying,
+            feeTaker0: this.market1.feeTaker0,
+            feeTaker1: this.market1.feeTaker1,
+            transactionFee0: this.market1.transactionFee0.toString(),
+            transactionFee1: this.market1.transactionFee1.toString(),
+            ndigit: this.market1.ndigit,
+            baseUnitExp: this.market1.baseUnitExp, /* typically 18 */
+            typeDuration: this.market1.typeDuration,
+            objectionPeriod: this.market1.objectionPeriod,
+            strikes: this.market1.strikes.map(function(strikeBn){return strikeBn.toString();}),
+            signerAddr: this.accountSign.address,
+          },
+          testMarket: false,
+          signature: signature,
+        },
+      ],
+      [
+        // settlement
+      ]
     ).send({
       gas: 3000000,
       from: this.accountOwnerAddress
@@ -245,55 +291,36 @@ describe('Test createMarket() and getMarketDataList()', function() {
     assert.equal(marketDataList[1].marketHash, this.marketHash1);
   });
 
-  /*
-  it('should NOT add market #2 (by somone not owning of the contract)', async function() {
-    let signature = await factsigner.sign(this.web3, this.accountSign.privateKey, this.factHash2);
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market2.expirationDatetime,
-        underlying: this.market2.underlying,
-        feeTaker0: this.market2.feeTaker0,
-        feeTaker1: this.market2.feeTaker1,
-        transactionFee0: this.market2.transactionFee0.toString(),
-        transactionFee1: this.market2.transactionFee1.toString(),
-        ndigit: this.market2.ndigit,
-        baseUnitExp: this.market2.baseUnitExp, // typically 18
-        typeDuration: this.market2.typeDuration,
-        objectionPeriod: this.market2.objectionPeriod,
-        strikes: this.market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
-    ).send({
-      gas: 3000000,
-      from: this.accountOtherAddress
-    }).then(
-      () => Promise.reject(new Error('Expected method to reject.')),
-      err => assert.equal(err instanceof Error, true)
-    );
-  });
-  */
-
   it('add market #2', async function() {
     let signature = await factsigner.sign(this.web3, this.accountSign.privateKey, this.factHash2);
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market2.expirationDatetime,
-        underlying: this.market2.underlying,
-        feeTaker0: this.market2.feeTaker0,
-        feeTaker1: this.market2.feeTaker1,
-        transactionFee0: this.market2.transactionFee0.toString(),
-        transactionFee1: this.market2.transactionFee1.toString(),
-        ndigit: this.market2.ndigit,
-        baseUnitExp: this.market2.baseUnitExp, /* typically 18 */
-        typeDuration: this.market2.typeDuration,
-        objectionPeriod: this.market2.objectionPeriod,
-        strikes: this.market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
+    await this.metaContract.methods.createRegisterAndSettlement(
+      [ 
+        // create and register
+        {
+          digiOptionsMarkets: this.marketsContract.options.address,
+          digiOptionsMarketLister: [this.marketListerContract.options.address],
+          // TODO pass only this.market0 to createMarket()
+          marketBaseData: {
+            expirationDatetime: this.market2.expirationDatetime,
+            underlying: this.market2.underlying,
+            feeTaker0: this.market2.feeTaker0,
+            feeTaker1: this.market2.feeTaker1,
+            transactionFee0: this.market2.transactionFee0.toString(),
+            transactionFee1: this.market2.transactionFee1.toString(),
+            ndigit: this.market2.ndigit,
+            baseUnitExp: this.market2.baseUnitExp, /* typically 18 */
+            typeDuration: this.market2.typeDuration,
+            objectionPeriod: this.market2.objectionPeriod,
+            strikes: this.market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
+            signerAddr: this.accountSign.address,
+          },
+          testMarket: false,
+          signature: signature,
+        },
+      ],
+      [
+        // settlement
+      ]
     ).send({
       gas: 3000000,
       from: this.accountOwnerAddress
@@ -320,23 +347,34 @@ describe('Test createMarket() and getMarketDataList()', function() {
 
   it('add market #2 (again)', async function() {
     let signature = await factsigner.sign(this.web3, this.accountSign.privateKey, this.factHash2);
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market2.expirationDatetime,
-        underlying: this.market2.underlying,
-        feeTaker0: this.market2.feeTaker0,
-        feeTaker1: this.market2.feeTaker1,
-        transactionFee0: this.market2.transactionFee0.toString(),
-        transactionFee1: this.market2.transactionFee1.toString(),
-        ndigit: this.market2.ndigit,
-        baseUnitExp: this.market2.baseUnitExp, /* typically 18 */
-        typeDuration: this.market2.typeDuration,
-        objectionPeriod: this.market2.objectionPeriod,
-        strikes: this.market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
+    await this.metaContract.methods.createRegisterAndSettlement(
+      [ 
+        // create and register
+        {
+          digiOptionsMarkets: this.marketsContract.options.address,
+          digiOptionsMarketLister: [this.marketListerContract.options.address],
+          // TODO pass only this.market0 to createMarket()
+          marketBaseData: {
+            expirationDatetime: this.market2.expirationDatetime,
+            underlying: this.market2.underlying,
+            feeTaker0: this.market2.feeTaker0,
+            feeTaker1: this.market2.feeTaker1,
+            transactionFee0: this.market2.transactionFee0.toString(),
+            transactionFee1: this.market2.transactionFee1.toString(),
+            ndigit: this.market2.ndigit,
+            baseUnitExp: this.market2.baseUnitExp, /* typically 18 */
+            typeDuration: this.market2.typeDuration,
+            objectionPeriod: this.market2.objectionPeriod,
+            strikes: this.market2.strikes.map(function(strikeBn){return strikeBn.toString();}),
+            signerAddr: this.accountSign.address,
+          },
+          testMarket: false,
+          signature: signature,
+        },
+      ],
+      [
+        // settlement
+      ]
     ).send({
       gas: 3000000,
       from: this.accountOwnerAddress
@@ -358,23 +396,34 @@ describe('Test createMarket() and getMarketDataList()', function() {
 
   it('should NOT add market #3 (ndigit precision too low)', async function() {
     let signature = await factsigner.sign(this.web3, this.accountSign.privateKey, this.factHash3);
-    await this.marketListerContract.methods.createMarket(
-      {
-        expirationDatetime: this.market3.expirationDatetime,
-        underlying: this.market3.underlying,
-        feeTaker0: this.market3.feeTaker0,
-        feeTaker1: this.market3.feeTaker1,
-        transactionFee0: this.market3.transactionFee0.toString(),
-        transactionFee1: this.market3.transactionFee1.toString(),
-        ndigit: this.market3.ndigit,
-        baseUnitExp: this.market3.baseUnitExp, /* typically 18 */
-        typeDuration: this.market3.typeDuration,
-        objectionPeriod: this.market3.objectionPeriod,
-        strikes: this.market3.strikes.map(function(strikeBn){return strikeBn.toString();}),
-        signerAddr: this.accountSign.address,
-      },
-      false, // testMarket
-      signature
+    await this.metaContract.methods.createRegisterAndSettlement(
+      [ 
+        // create and register
+        {
+          digiOptionsMarkets: this.marketsContract.options.address,
+          digiOptionsMarketLister: [this.marketListerContract.options.address],
+          // TODO pass only this.market0 to createMarket()
+          marketBaseData: {
+            expirationDatetime: this.market3.expirationDatetime,
+            underlying: this.market3.underlying,
+            feeTaker0: this.market3.feeTaker0,
+            feeTaker1: this.market3.feeTaker1,
+            transactionFee0: this.market3.transactionFee0.toString(),
+            transactionFee1: this.market3.transactionFee1.toString(),
+            ndigit: this.market3.ndigit,
+            baseUnitExp: this.market3.baseUnitExp, /* typically 18 */
+            typeDuration: this.market3.typeDuration,
+            objectionPeriod: this.market3.objectionPeriod,
+            strikes: this.market3.strikes.map(function(strikeBn){return strikeBn.toString();}),
+            signerAddr: this.accountSign.address,
+          },
+          testMarket: false,
+          signature: signature,
+        },
+      ],
+      [
+        // settlement
+      ]
     ).send({
       gas: 3000000,
       from: this.accountOwnerAddress

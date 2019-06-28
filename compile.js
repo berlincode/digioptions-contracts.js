@@ -12,6 +12,7 @@ const files = [
   'contracts/DigiOptionsMarkets.sol',
   'contracts/DigiOptionsMarketLister.sol',
   'contracts/DigiOptionsBaseInterface.sol',
+  'contracts/DigiOptionsMeta.sol',
   'contracts/SafeCast.sol',
   'contracts/SafeMath.sol'
 ];
@@ -99,7 +100,8 @@ var generate = function(filenameSol, contractName, baseName){
 
 try {
   generate('contracts/DigiOptionsMarkets.sol', 'DigiOptionsMarkets', 'digioptions_markets');
-  generate('contracts/DigiOptionsMarketLister.sol', 'DigioptionsMarketLister', 'digioptions_market_lister');
+  generate('contracts/DigiOptionsMarketLister.sol', 'DigiOptionsMarketLister', 'digioptions_market_lister');
+  generate('contracts/DigiOptionsMeta.sol', 'DigiOptionsMeta', 'digioptions_meta');
   console.log('wrote contract abi/bin successfully');
 } catch(err) {
   console.log('ERROR: failed to write contract abi/bin:', err);
