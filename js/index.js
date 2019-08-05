@@ -5,6 +5,7 @@
     define([
       'web3',
       'factsigner',
+      './digioptions_constants',
       './digioptions_markets_abi',
       './digioptions_market_lister_abi'
     ], factory);
@@ -13,6 +14,7 @@
     module.exports = factory(
       require('web3'),
       require('factsigner'),
+      require('./digioptions_constants'),
       require('./digioptions_markets_abi'),
       require('./digioptions_market_lister_abi')
     );
@@ -21,11 +23,12 @@
     root.digioptionsContracts = factory(
       root.web3, // we expect that the whole Web3 was loaded an use only the utils from it
       root.factsigner,
+      root.digioptionsContractsConstants,
       root.digioptions_markets_abi,
       root.digioptions_market_lister_abi
     );
   }
-}(this, function (Web3, factsigner, digioptionsMarketsAbi, digioptionsMarketListerAbi) {
+}(this, function (Web3, factsigner, constants, digioptionsMarketsAbi, digioptionsMarketListerAbi) {
 
   var web3 = new Web3();
 
@@ -116,12 +119,12 @@
   var nanoOptionsPerOptionExp = web3.utils.toBN('9');
 
   return {
+    constants: constants,
     digioptionsMarketsAbi: digioptionsMarketsAbi,
     digioptionsMarketListerAbi: digioptionsMarketListerAbi,
     marketHash: marketHash,
     orderOfferToHash: orderOfferToHash,
     signOrder: signOrder,
-    optionPayout: 1000000000, // TODO remove payout per successful option (in wei)
     // payoutPerNanoOption * nanoOptionsPerOption should be 10**18 (1 ether in wei)
     payoutPerNanoOptionExp: payoutPerNanoOptionExp,
     nanoOptionsPerOptionExp: nanoOptionsPerOptionExp,
@@ -139,24 +142,6 @@
       major: 0,
       minor: 46,
       bugfix: 0
-    },
-    userState: {
-      USER_NONE: 0,
-      USER_EXISTS: 1,
-      USER_PAYED_OUT: 2
-    },
-    contractType: {
-      CONTRACT_UNKNOWN: 0,
-      CONTRACT_DIGIOPTIONSMARKETS: 1,
-      CONTRACT_DIGIOPTIONSMARKETLISTER: 2
-    },
-    typeDuration: {
-      0: 'yearly',
-      1: 'monthly',
-      2: 'weekly',
-      3: 'daily',
-      4: 'hourly',
-      5: 'short term' // TODO better name
     }
   };
 }));

@@ -18,10 +18,16 @@ const digioptionsMetaAbi = require('../js/digioptions_meta_abi.js')();
 //before('initialize variables', function(done) {
 //  done();
 //});
+const logger = {
+  log: function(/*message*/) {
+    //console.log(message);
+  }
+};
 
 async function setup(){
   const options = {
-    //gasPrice: 10000000000,
+    logger: logger,
+    //gasPrice: 20000000000,
     //gasLimit: 0x47E7C4,
     accounts: [
       {
@@ -37,7 +43,15 @@ async function setup(){
     time: new Date(1), // set time of first block to 1970 so that markets can always be created
   };
 
-  return new Web3(ganache.provider(options));
+  return new Web3(
+    ganache.provider(options),
+    null, 
+    {
+      defaultBlock: 'latest',
+      transactionConfirmationBlocks: 1,
+      transactionBlockTimeout: 5
+    }
+  );
 }
 
 function loadBeforeAndAfter() {
