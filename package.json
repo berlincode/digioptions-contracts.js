@@ -41,12 +41,12 @@
   "dependencies": {
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
     "patch-package": "6.1.2",
-    "web3": "2.0.0-alpha"
+    "web3": "2.0.0-alpha.1"
   },
   "devDependencies": {
     "eslint": "^6.1.0",
     "ganache-core": "2.6.1",
-    "mocha": "^6.0.2",
+    "mocha": "^6.2.0",
     "solc": "0.5.10",
     "ethlint": "^1.2.4"
   }
