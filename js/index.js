@@ -49,8 +49,8 @@
       {t: 'uint64', v: marketBaseData.transactionFee0},
       {t: 'uint64', v: marketBaseData.transactionFee1}
     ];
-  
-    // take special care of out strikes int128 array 
+
+    // take special care of out strikes int128 array
     // see: https://github.com/ethereumjs/ethereumjs-abi/issues/27
     // see: https://github.com/ethereumjs/ethereumjs-abi/pull/47
     marketBaseData.strikes.map(
@@ -91,19 +91,13 @@
     return orderSigned;
   };
 
-  var versionToInt = function(ver){
-    return (
-      (ver.major << 32) +
-      (ver.minor << 16) +
-      (ver.bugfix)
-    );
-  };
-
   var versionFromInt = function(ver){
+    var verBn = web3.utils.toBN(ver);
+    var mask = web3.utils.toBN('0xffff');
     return ({
-      major: (ver >> 32) & 0xffff,
-      minor: (ver >> 16) & 0xffff,
-      bugfix: ver & 0xffff
+      major: verBn.ushrn(32).uand(mask).toNumber(),
+      minor: verBn.ushrn(16).uand(mask).toNumber(),
+      bugfix: verBn.uand(mask).toNumber()
     });
   };
 
@@ -114,7 +108,7 @@
       ver.bugfix
     );
   };
-  
+
   var payoutPerNanoOptionExp = web3.utils.toBN('9');
   var nanoOptionsPerOptionExp = web3.utils.toBN('9');
 
@@ -130,18 +124,22 @@
     nanoOptionsPerOptionExp: nanoOptionsPerOptionExp,
     payoutPerNanoOption: web3.utils.toBN('10').pow(payoutPerNanoOptionExp), // == 1000000000 (in wei)
     nanoOptionsPerOption: web3.utils.toBN('10').pow(payoutPerNanoOptionExp), // == 1000000000
-    versionToInt: versionToInt,
     versionFromInt: versionFromInt,
     versionToString: versionToString,
     versionMarketLister: {
       major: 0,
       minor: 46,
-      bugfix: 0
+      bugfix: 1
     },
     versionMarkets: {
       major: 0,
       minor: 46,
-      bugfix: 0
+      bugfix: 1
+    },
+    versionMeta: {
+      major: 0,
+      minor: 46,
+      bugfix: 1
     }
   };
 }));

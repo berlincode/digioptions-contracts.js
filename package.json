@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.48.0",
+  "version": "0.48.1",
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "SEE LICENSE IN LICENSE",
@@ -47,7 +47,7 @@
     "eslint": "^6.1.0",
     "ganache-core": "2.6.1",
     "mocha": "^6.2.0",
-    "solc": "0.5.10",
+    "solc": "0.5.11",
     "ethlint": "^1.2.4"
   }
 }

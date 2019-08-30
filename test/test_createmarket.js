@@ -518,13 +518,21 @@ describe('Test createMarket() and getMarketDataList()', function() {
     const contractInfo = await this.marketListerContract.methods.getContractInfo().call();
 
     const versionMarketLister = digioptionsContracts.versionFromInt(contractInfo.versionMarketLister);
-    const versionMarkets = digioptionsContracts.versionFromInt(contractInfo.versionMarkets);
-
     assert.equal(digioptionsContracts.versionMarketLister.major, versionMarketLister.major);
     assert.equal(digioptionsContracts.versionMarketLister.minor, versionMarketLister.minor);
+    assert.equal(digioptionsContracts.versionMarketLister.bugfix, versionMarketLister.bugfix);
 
+    const versionMarkets = digioptionsContracts.versionFromInt(contractInfo.versionMarkets);
     assert.equal(digioptionsContracts.versionMarkets.major, versionMarkets.major);
     assert.equal(digioptionsContracts.versionMarkets.minor, versionMarkets.minor);
+    assert.equal(digioptionsContracts.versionMarkets.bugfix, versionMarkets.bugfix);
+
+    /*TODO
+    const versionMeta = digioptionsContracts.versionFromInt(contractInfo.versionMeta);
+    assert.equal(digioptionsContracts.versionMeta.major, versionMeta.major);
+    assert.equal(digioptionsContracts.versionMeta.minor, versionMeta.minor);
+    assert.equal(digioptionsContracts.versionMeta.bugfix, versionMeta.bugfix);
+    */
 
     /*
     assert.equal(

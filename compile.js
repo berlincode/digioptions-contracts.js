@@ -105,4 +105,5 @@ try {
   console.log('wrote contract abi/bin successfully');
 } catch(err) {
   console.log('ERROR: failed to write contract abi/bin:', err);
+  process.exit(1);
 }

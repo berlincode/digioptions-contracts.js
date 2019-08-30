@@ -13,7 +13,7 @@
 
 */
 
-pragma solidity 0.5.10;
+pragma solidity 0.5.11;
 pragma experimental ABIEncoderV2;
 
 import "./DigiOptionsBaseInterface.sol";
@@ -30,7 +30,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
     uint256 public version = (
         (0 << 32) + /* major */
         (46 << 16) + /* minor */
-        0 /* bugfix */
+        1 /* bugfix */
     );
 
     //each nanoOption is worth 1000000000 wei in case of win,
