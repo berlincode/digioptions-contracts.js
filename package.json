@@ -28,6 +28,7 @@
     "contracts/*.sol",
     "patches/*.patch",
     "LICENSE",
+    "DISCLAIMER",
     "README.md"
   ],
   "repository": {

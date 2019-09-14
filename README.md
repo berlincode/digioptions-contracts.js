@@ -17,6 +17,11 @@ Public repository
 
 https://github.com/berlincode/digioptions-contracts.js
 
+Disclaimer
+----------
+
+Please have a look at
+[Freedex Protocol Disclaimer](./DISCLAIMER).
 
 Copyright and license
 ---------------------
