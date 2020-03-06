@@ -3,3 +3,8 @@ README.html
 *.custom*
 _*
 npm-debug.log
+test/gasStatistics.json
+coverage/coverage
+coverage/*.json
+profiler/coverage
+profiler/*.json

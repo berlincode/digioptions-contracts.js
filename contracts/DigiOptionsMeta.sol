@@ -16,45 +16,42 @@
 
 */
 
-pragma solidity 0.5.11;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
-import "./DigiOptionsBaseInterface.sol";
+//import "./DigiOptionsBaseInterface.sol";
 import "./DigiOptionsMarkets.sol";
 import "./DigiOptionsMarketLister.sol";
+import "./DigiOptionsLib.sol";
 
 
 contract DigiOptionsMeta {
-
-    uint256 public version = (
-        (0 << 32) + /* major */
-        (46 << 16) + /* minor */
-        0 /* bugfix */
-    );
 
     /* This is the constructor */
     //constructor () public {
     //}
 
+    /* TODO re-enabled after 0x-tools support solc-0.6.0
     // default fallback
-    function() external payable {
+    receive () external payable {
         revert();
     }
+    */
 
     struct CreateAndRegisterData {
         DigiOptionsMarkets digiOptionsMarkets;
-        DigiOptionsMarketLister[] digiOptionsMarketLister;
-        DigiOptionsMarkets.MarketBaseData marketBaseData;
+        DigiOptionsLib.MarketBaseData marketBaseData;
         bool testMarket;
-        DigiOptionsMarkets.Signature signature;
+        FactsignerVerify.Signature signature;
     }
 
     struct SettlementData {
         DigiOptionsMarkets digiOptionsMarkets;
         bytes32 marketHash; /* market to settle */
-        DigiOptionsBaseInterface.Signature signature;
+        FactsignerVerify.Signature signature;
         int256 value;
-        uint256 maxNumUsersToPayout;
+        address[] users;
+        bytes32[] offerHash;
     }
 
     function createRegisterAndSettlement (
@@ -62,31 +59,43 @@ contract DigiOptionsMeta {
         SettlementData[] memory settlementDataList
     ) public // this should be external (see https://github.com/ethereum/solidity/issues/5479)
     {
-        
+
         for (uint256 createAndRegisterDataIdx=0; createAndRegisterDataIdx < createAndRegisterDataList.length; createAndRegisterDataIdx++) {
             CreateAndRegisterData memory createAndRegisterData = createAndRegisterDataList[createAndRegisterDataIdx];
 
+            /*
+            uint256[] memory infoValues = createAndRegisterData.digiOptionsMarkets.getContractInfo();
+            DigiOptionsMarkets digiOptionsMarketsX = DigiOptionsMarkets(address(infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)]));
+            if (infoValues[uint256(DigiOptionsLib.InfoValues.CONTRACT_TYPE_IDX)] == uint256(DigiOptionsLib.ContractType.DIGIOPTIONSMARKETLISTER))
+            {
+            }
             bytes32 marketHash = createAndRegisterData.digiOptionsMarkets.createMarket(
                 createAndRegisterData.marketBaseData,
                 createAndRegisterData.testMarket,
                 createAndRegisterData.signature
             );
 
-            for (uint256 marketListerIdx=0; marketListerIdx < createAndRegisterData.digiOptionsMarketLister.length; marketListerIdx++) {
 
                 createAndRegisterData.digiOptionsMarketLister[marketListerIdx].registerMarket(
                     marketHash,
                     createAndRegisterData.testMarket
                 );
-            }
+            */
+
+            createAndRegisterData.digiOptionsMarkets.createMarket(
+                createAndRegisterData.marketBaseData,
+                createAndRegisterData.testMarket,
+                createAndRegisterData.signature
+            );
         }
         for (uint256 settlementDataIdx=0; settlementDataIdx < settlementDataList.length; settlementDataIdx++) {
             SettlementData memory settlementData = settlementDataList[settlementDataIdx];
             settlementData.digiOptionsMarkets.settlement(
-                settlementData.marketHash, /* market to settle */
+                settlementData.marketHash, // market to settle
                 settlementData.signature,
                 settlementData.value,
-                settlementData.maxNumUsersToPayout
+                settlementData.users,
+                settlementData.offerHash
             );
         }
     }

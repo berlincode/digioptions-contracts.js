@@ -1,82 +1,93 @@
-pragma solidity 0.5.11;
-pragma experimental ABIEncoderV2;
-
 /*
-    Base data structures and the interface functions that
-    are implemente by both contracts (DigiOptionsMarkets and
-    DigioptionsMarketLister)
+ freedex-protocol / User Driven Option Markets Contract used by https://www.digioptions.com
+
+ Base data structures and the interface functions that
+ are implemented by both contracts (DigiOptionsMarkets and
+ DigioptionsMarketLister)
+
+ Public repository:
+ https://github.com/berlincode/digioptions-contracts.js
+
+ elastic.code@gmail.com
+ mail@digioptions.com
+
+
+ MIT License
+
+ Copyright (c) digioptions.com (https://www.digioptions.com)
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
 */
 
+pragma solidity ^0.6.1;
+pragma experimental ABIEncoderV2;
 
-contract DigiOptionsBaseInterface {
+import "factsigner/contracts/FactsignerDefines.sol";
+import "factsigner/contracts/FactsignerVerify.sol";
+//import_"@openzeppelin/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
+import "./DigiOptionsLib.sol";
 
-    enum ContractType {
-        CONTRACT_UNKNOWN,
-        CONTRACT_DIGIOPTIONSMARKETS, // == 1
-        CONTRACT_DIGIOPTIONSMARKETLISTER // == 2
-    }
-
-    uint256 public version;
-
-    enum UserState {USER_NONE, USER_EXISTS, USER_PAYED_OUT}
-
-    struct Signature {
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-    }
-
-    struct Data {
-        /* winningOptionID is only valid if settled == true */
-        uint16 winningOptionID;
-        bool settled;
-    }
-
-    struct MarketBaseData {
-        /* constant core market data, part of marketHash calculation */
-
-        bytes32 underlying;
-        uint40 expirationDatetime; /* used for sorting contracts */
-        int8 ndigit;
-        uint8 baseUnitExp;
-        uint32 objectionPeriod; /* e.g. 3600 seconds */
-
-        address signerAddr; /* address used to check the signed result (e.g. of factsigner) */
-
-        uint8 typeDuration;
-        uint64 transactionFee0; /* fee in wei for every ether of value (payed by orderTaker) */
-        address feeTaker0;
-        uint64 transactionFee1; /* fee in wei for every ether of value (payed by orderTaker) */
-        address feeTaker1;
-        int128[] strikes;
-    }
-
-    struct MarketData {
-        MarketBaseData marketBaseData;
-        Data data;
-        bytes32 marketHash;
-        UserState userState;
-        bool testMarket; // only used by MarketLister
-    }
+abstract contract DigiOptionsBaseInterface {
 
     function getContractInfo (
     )
         external
-        returns (
-            ContractType contractType,
-            uint256 versionMarketLister,
-            uint256 versionMarkets,
-            address digiOptionsMarketsAddr
-        );
+        virtual
+        returns (uint256[] memory contractInfoValues);
 
-    function getMarketDataList (
-        bool filterTestMarkets, // default: true // if true all test markets are filtered out
-        bool filterNoTradedMarkets, // default: false // filter out all markets the the uses (msg.sender) has not traded
-        uint64 expirationDatetime,
-        uint16 len,
-        bytes32[] calldata marketHashLast // if list is empty we start at head - otherwise we continue to list after marketHashLast[0]
+    function getMarketDataByMarketHash (
+        address addr, // marketData.userState for this address
+        bytes32 marketHash
+    )
+        public
+        view
+        virtual
+        returns (DigiOptionsLib.MarketData memory marketData);
+
+    function getMarketDataListByMarketKeys (
+        address addr, // marketData.userState for this address
+        bytes32[] calldata marketKeys // marketsContract uses marketHash / marketListerContract uses baseMarketHash
     )
         external
         view
-        returns (MarketData[] memory marketList);
+        virtual
+        returns (DigiOptionsLib.MarketData[] memory marketDataList);
+
+    // TODO implement createMarketTest
+
+    function createMarket (
+        DigiOptionsLib.MarketBaseData memory marketBaseData,
+        bool testMarket,
+        FactsignerVerify.Signature memory signature
+    )
+        public
+        virtual
+        returns (bytes32 marketHash);
+
+    function calcMarketInterval (
+        uint40 expirationDatetime
+    )
+        external
+        view
+        virtual
+        returns (uint8 interval);
+
 }

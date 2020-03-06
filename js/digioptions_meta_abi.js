@@ -17,22 +17,6 @@
   /* eslint-disable quotes */
   var data = [
     {
-      "constant": true,
-      "inputs": [],
-      "name": "version",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [
         {
           "components": [
@@ -42,16 +26,11 @@
               "type": "address"
             },
             {
-              "internalType": "contract DigiOptionsMarketLister[]",
-              "name": "digiOptionsMarketLister",
-              "type": "address[]"
-            },
-            {
               "components": [
                 {
-                  "internalType": "bytes32",
-                  "name": "underlying",
-                  "type": "bytes32"
+                  "internalType": "string",
+                  "name": "underlyingString",
+                  "type": "string"
                 },
                 {
                   "internalType": "uint40",
@@ -59,9 +38,19 @@
                   "type": "uint40"
                 },
                 {
-                  "internalType": "int8",
-                  "name": "ndigit",
-                  "type": "int8"
+                  "internalType": "uint24",
+                  "name": "objectionPeriod",
+                  "type": "uint24"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "config",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "marketCategory",
+                  "type": "uint8"
                 },
                 {
                   "internalType": "uint8",
@@ -69,9 +58,9 @@
                   "type": "uint8"
                 },
                 {
-                  "internalType": "uint32",
-                  "name": "objectionPeriod",
-                  "type": "uint32"
+                  "internalType": "int8",
+                  "name": "ndigit",
+                  "type": "int8"
                 },
                 {
                   "internalType": "address",
@@ -80,13 +69,13 @@
                 },
                 {
                   "internalType": "uint8",
-                  "name": "typeDuration",
+                  "name": "marketInterval",
                   "type": "uint8"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint32",
                   "name": "transactionFee0",
-                  "type": "uint64"
+                  "type": "uint32"
                 },
                 {
                   "internalType": "address",
@@ -94,9 +83,14 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint32",
                   "name": "transactionFee1",
-                  "type": "uint64"
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFeeSigner",
+                  "type": "uint32"
                 },
                 {
                   "internalType": "address",
@@ -109,7 +103,7 @@
                   "type": "int128[]"
                 }
               ],
-              "internalType": "struct DigiOptionsBaseInterface.MarketBaseData",
+              "internalType": "struct DigiOptionsLib.MarketBaseData",
               "name": "marketBaseData",
               "type": "tuple"
             },
@@ -136,7 +130,7 @@
                   "type": "bytes32"
                 }
               ],
-              "internalType": "struct DigiOptionsBaseInterface.Signature",
+              "internalType": "struct FactsignerVerify.Signature",
               "name": "signature",
               "type": "tuple"
             }
@@ -175,7 +169,7 @@
                   "type": "bytes32"
                 }
               ],
-              "internalType": "struct DigiOptionsBaseInterface.Signature",
+              "internalType": "struct FactsignerVerify.Signature",
               "name": "signature",
               "type": "tuple"
             },
@@ -185,9 +179,14 @@
               "type": "int256"
             },
             {
-              "internalType": "uint256",
-              "name": "maxNumUsersToPayout",
-              "type": "uint256"
+              "internalType": "address[]",
+              "name": "users",
+              "type": "address[]"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "offerHash",
+              "type": "bytes32[]"
             }
           ],
           "internalType": "struct DigiOptionsMeta.SettlementData[]",
@@ -197,14 +196,8 @@
       ],
       "name": "createRegisterAndSettlement",
       "outputs": [],
-      "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
-    },
-    {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
     }
   ];
   /* eslint-enable quotes */

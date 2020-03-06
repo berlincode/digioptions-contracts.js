@@ -1,0 +1,72 @@
+{
+  "contract create marketsContract": [
+    {
+      "gasUsed": "3998687",
+      "usd": "7.197"
+    }
+  ],
+  "freeLiquidity (1 user)": [
+    {
+      "gasUsed": "62152",
+      "usd": "0.111"
+    }
+  ],
+  "liquidity add (user)": [
+    {
+      "gasUsed": "44033",
+      "usd": "0.079"
+    }
+  ],
+  "liquidity withdraw (user)": [
+    {
+      "gasUsed": "37786",
+      "usd": "0.068"
+    }
+  ],
+  "market create": [
+    {
+      "gasUsed": "210692",
+      "usd": "0.379"
+    }
+  ],
+  "order execute": [
+    {
+      "gasUsed": "150701",
+      "usd": "0.271"
+    },
+    {
+      "gasUsed": "105682",
+      "usd": "0.190"
+    },
+    {
+      "gasUsed": "105689",
+      "usd": "0.190"
+    },
+    {
+      "gasUsed": "49161",
+      "usd": "0.088"
+    },
+    {
+      "gasUsed": "49020",
+      "usd": "0.088"
+    },
+    {
+      "gasUsed": "135618",
+      "usd": "0.244"
+    },
+    {
+      "gasUsed": "49221",
+      "usd": "0.088"
+    },
+    {
+      "gasUsed": "48714",
+      "usd": "0.087"
+    }
+  ],
+  "settlement (1 user)": [
+    {
+      "gasUsed": "162416",
+      "usd": "0.292"
+    }
+  ]
+}

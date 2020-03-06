@@ -17,361 +17,541 @@
   /* eslint-disable quotes */
   var data = [
     {
-      "constant": true,
-      "inputs": [],
-      "name": "openDelaySeconds",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "marketHash",
-          "type": "bytes32"
+          "internalType": "contract DigiOptionsMarkets",
+          "name": "addr",
+          "type": "address"
         }
       ],
-      "name": "getMarketData",
-      "outputs": [
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "underlying",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "uint40",
-                  "name": "expirationDatetime",
-                  "type": "uint40"
-                },
-                {
-                  "internalType": "int8",
-                  "name": "ndigit",
-                  "type": "int8"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "baseUnitExp",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "objectionPeriod",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "address",
-                  "name": "signerAddr",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "typeDuration",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee0",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker0",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee1",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker1",
-                  "type": "address"
-                },
-                {
-                  "internalType": "int128[]",
-                  "name": "strikes",
-                  "type": "int128[]"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.MarketBaseData",
-              "name": "marketBaseData",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint16",
-                  "name": "winningOptionID",
-                  "type": "uint16"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "settled",
-                  "type": "bool"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.Data",
-              "name": "data",
-              "type": "tuple"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "marketHash",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "enum DigiOptionsBaseInterface.UserState",
-              "name": "userState",
-              "type": "uint8"
-            },
-            {
-              "internalType": "bool",
-              "name": "testMarket",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct DigiOptionsBaseInterface.MarketData",
-          "name": "marketData_",
-          "type": "tuple"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "version",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "uint64",
-          "name": "transactionFeeMax_",
-          "type": "uint64"
-        }
-      ],
-      "name": "setTransactionFeeMax",
-      "outputs": [],
-      "payable": false,
       "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "marketKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint48",
+          "name": "expirationDatetimeFilter",
+          "type": "uint48"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint40",
+          "name": "expirationDatetime",
+          "type": "uint40"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint8",
+          "name": "marketInterval",
+          "type": "uint8"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint8",
+          "name": "marketCategory",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "openDelaySeconds",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "underlyingString",
+          "type": "string"
+        }
+      ],
+      "name": "MarketCreateLister",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint40",
+          "name": "expirationDatetime",
+          "type": "uint40"
+        }
+      ],
+      "name": "calcMarketInterval",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "interval",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": true,
       "inputs": [
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "underlying",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "uint40",
-                  "name": "expirationDatetime",
-                  "type": "uint40"
-                },
-                {
-                  "internalType": "int8",
-                  "name": "ndigit",
-                  "type": "int8"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "baseUnitExp",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "objectionPeriod",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "address",
-                  "name": "signerAddr",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "typeDuration",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee0",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker0",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee1",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker1",
-                  "type": "address"
-                },
-                {
-                  "internalType": "int128[]",
-                  "name": "strikes",
-                  "type": "int128[]"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.MarketBaseData",
-              "name": "marketBaseData",
-              "type": "tuple"
+              "internalType": "string",
+              "name": "underlyingString",
+              "type": "string"
             },
             {
-              "components": [
-                {
-                  "internalType": "uint16",
-                  "name": "winningOptionID",
-                  "type": "uint16"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "settled",
-                  "type": "bool"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.Data",
-              "name": "data",
-              "type": "tuple"
+              "internalType": "uint40",
+              "name": "expirationDatetime",
+              "type": "uint40"
             },
             {
-              "internalType": "bytes32",
-              "name": "marketHash",
-              "type": "bytes32"
+              "internalType": "uint24",
+              "name": "objectionPeriod",
+              "type": "uint24"
             },
             {
-              "internalType": "enum DigiOptionsBaseInterface.UserState",
-              "name": "userState",
+              "internalType": "uint8",
+              "name": "config",
               "type": "uint8"
             },
             {
-              "internalType": "bool",
-              "name": "testMarket",
-              "type": "bool"
+              "internalType": "uint8",
+              "name": "marketCategory",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "baseUnitExp",
+              "type": "uint8"
+            },
+            {
+              "internalType": "int8",
+              "name": "ndigit",
+              "type": "int8"
+            },
+            {
+              "internalType": "address",
+              "name": "signerAddr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "marketInterval",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFee0",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "feeTaker0",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFee1",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFeeSigner",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "feeTaker1",
+              "type": "address"
+            },
+            {
+              "internalType": "int128[]",
+              "name": "strikes",
+              "type": "int128[]"
             }
           ],
-          "internalType": "struct DigiOptionsBaseInterface.MarketData",
-          "name": "marketData",
+          "internalType": "struct DigiOptionsLib.MarketBaseData",
+          "name": "marketBaseData",
           "type": "tuple"
-        }
-      ],
-      "name": "calcBaseMarketHash",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "baseMarketHash",
-          "type": "bytes32"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketHash",
-          "type": "bytes32"
         },
         {
           "internalType": "bool",
           "name": "testMarket",
           "type": "bool"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "v",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "r",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "s",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct FactsignerVerify.Signature",
+          "name": "signature",
+          "type": "tuple"
         }
       ],
-      "name": "setTestMarket",
-      "outputs": [],
-      "payable": false,
+      "name": "createMarket",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketHash",
+          "type": "bytes32"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "transactionFeeMax",
-      "outputs": [
-        {
-          "internalType": "uint64",
-          "name": "",
-          "type": "uint64"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [],
       "name": "getContractInfo",
       "outputs": [
         {
-          "internalType": "enum DigiOptionsBaseInterface.ContractType",
-          "name": "contractType",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "versionMarketLister",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "versionMarkets",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "digiOptionsMarketsAddr",
-          "type": "address"
+          "internalType": "uint256[]",
+          "name": "contractInfoValues",
+          "type": "uint256[]"
         }
       ],
-      "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "marketHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getMarketDataByMarketHash",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "underlyingString",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint40",
+                  "name": "expirationDatetime",
+                  "type": "uint40"
+                },
+                {
+                  "internalType": "uint24",
+                  "name": "objectionPeriod",
+                  "type": "uint24"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "config",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "marketCategory",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "baseUnitExp",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "int8",
+                  "name": "ndigit",
+                  "type": "int8"
+                },
+                {
+                  "internalType": "address",
+                  "name": "signerAddr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "marketInterval",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFee0",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeTaker0",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFee1",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFeeSigner",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeTaker1",
+                  "type": "address"
+                },
+                {
+                  "internalType": "int128[]",
+                  "name": "strikes",
+                  "type": "int128[]"
+                }
+              ],
+              "internalType": "struct DigiOptionsLib.MarketBaseData",
+              "name": "marketBaseData",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint128",
+                  "name": "fee",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "winningOptionID",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "settled",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct DigiOptionsLib.MarketState",
+              "name": "marketState",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "marketHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "enum DigiOptionsLib.UserState",
+              "name": "userState",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "testMarket",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct DigiOptionsLib.MarketData",
+          "name": "marketData",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "marketKeys",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "getMarketDataListByMarketKeys",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "underlyingString",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint40",
+                  "name": "expirationDatetime",
+                  "type": "uint40"
+                },
+                {
+                  "internalType": "uint24",
+                  "name": "objectionPeriod",
+                  "type": "uint24"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "config",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "marketCategory",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "baseUnitExp",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "int8",
+                  "name": "ndigit",
+                  "type": "int8"
+                },
+                {
+                  "internalType": "address",
+                  "name": "signerAddr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "marketInterval",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFee0",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeTaker0",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFee1",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "transactionFeeSigner",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeTaker1",
+                  "type": "address"
+                },
+                {
+                  "internalType": "int128[]",
+                  "name": "strikes",
+                  "type": "int128[]"
+                }
+              ],
+              "internalType": "struct DigiOptionsLib.MarketBaseData",
+              "name": "marketBaseData",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint128",
+                  "name": "fee",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "winningOptionID",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "settled",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct DigiOptionsLib.MarketState",
+              "name": "marketState",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "marketHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "enum DigiOptionsLib.UserState",
+              "name": "userState",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "testMarket",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct DigiOptionsLib.MarketData[]",
+          "name": "marketDataList",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMarketListerInfo",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "listerValues",
+          "type": "uint256[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DigiOptionsMarketLister.SignerData[]",
+          "name": "signerDataList",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes32",
@@ -386,250 +566,140 @@
       ],
       "name": "registerMarket",
       "outputs": [],
-      "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [
-        {
-          "internalType": "uint16",
-          "name": "openDelaySeconds_",
-          "type": "uint16"
-        }
-      ],
-      "name": "setOpenDelaySeconds",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "filterTestMarkets",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "filterNoTradedMarkets",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint64",
-          "name": "expirationDatetime",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint16",
-          "name": "len",
-          "type": "uint16"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "marketHashLast",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "getMarketDataList",
-      "outputs": [
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "underlying",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "uint40",
-                  "name": "expirationDatetime",
-                  "type": "uint40"
-                },
-                {
-                  "internalType": "int8",
-                  "name": "ndigit",
-                  "type": "int8"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "baseUnitExp",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "objectionPeriod",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "address",
-                  "name": "signerAddr",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "typeDuration",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee0",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker0",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transactionFee1",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "address",
-                  "name": "feeTaker1",
-                  "type": "address"
-                },
-                {
-                  "internalType": "int128[]",
-                  "name": "strikes",
-                  "type": "int128[]"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.MarketBaseData",
-              "name": "marketBaseData",
-              "type": "tuple"
+              "internalType": "string",
+              "name": "underlyingString",
+              "type": "string"
             },
             {
-              "components": [
-                {
-                  "internalType": "uint16",
-                  "name": "winningOptionID",
-                  "type": "uint16"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "settled",
-                  "type": "bool"
-                }
-              ],
-              "internalType": "struct DigiOptionsBaseInterface.Data",
-              "name": "data",
-              "type": "tuple"
+              "internalType": "uint40",
+              "name": "expirationDatetime",
+              "type": "uint40"
             },
             {
-              "internalType": "bytes32",
-              "name": "marketHash",
-              "type": "bytes32"
+              "internalType": "uint24",
+              "name": "objectionPeriod",
+              "type": "uint24"
             },
             {
-              "internalType": "enum DigiOptionsBaseInterface.UserState",
-              "name": "userState",
+              "internalType": "uint8",
+              "name": "config",
               "type": "uint8"
             },
             {
-              "internalType": "bool",
-              "name": "testMarket",
-              "type": "bool"
+              "internalType": "uint8",
+              "name": "marketCategory",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "baseUnitExp",
+              "type": "uint8"
+            },
+            {
+              "internalType": "int8",
+              "name": "ndigit",
+              "type": "int8"
+            },
+            {
+              "internalType": "address",
+              "name": "signerAddr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "marketInterval",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFee0",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "feeTaker0",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFee1",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "transactionFeeSigner",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "feeTaker1",
+              "type": "address"
+            },
+            {
+              "internalType": "int128[]",
+              "name": "strikes",
+              "type": "int128[]"
             }
           ],
-          "internalType": "struct DigiOptionsBaseInterface.MarketData[]",
-          "name": "marketList",
-          "type": "tuple[]"
+          "internalType": "struct DigiOptionsLib.MarketBaseData",
+          "name": "marketBaseData",
+          "type": "tuple"
         }
       ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "digiOptionsMarkets",
+      "name": "registerMarketTest",
       "outputs": [
         {
-          "internalType": "contract DigiOptionsMarkets",
-          "name": "",
-          "type": "address"
+          "internalType": "bool",
+          "name": "registerPossible",
+          "type": "bool"
         }
       ],
-      "payable": false,
       "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
         {
-          "internalType": "contract DigiOptionsMarkets",
+          "internalType": "address",
           "name": "addr",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
         }
       ],
-      "payable": false,
+      "name": "setSigner",
+      "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "function"
     },
     {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
           "internalType": "bytes32",
-          "name": "baseMarketHash",
+          "name": "marketHash",
           "type": "bytes32"
         },
         {
-          "indexed": true,
-          "internalType": "uint64",
-          "name": "expirationDatetime",
-          "type": "uint64"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "underlying",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint8",
-          "name": "typeDuration",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint16",
-          "name": "openDelaySeconds",
-          "type": "uint16"
+          "internalType": "bool",
+          "name": "testMarket",
+          "type": "bool"
         }
       ],
-      "name": "MarketCreateLister",
-      "type": "event"
+      "name": "setTestMarket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ];
   /* eslint-enable quotes */
