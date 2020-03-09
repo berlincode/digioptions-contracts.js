@@ -77,6 +77,22 @@
     };
   }
 
+  function marketListerInfoToMarketListerDescription(web3, contractListerInfo){
+    var listerValues = contractListerInfo.listerValues;
+    var signerDataList = contractListerInfo.signerDataList;
+
+    var versionMarketLister = listerValues[0];
+    var ownerAddr = listerValues[1].toHexString();
+
+    return {
+      listerValues: {
+        versionMarketLister: versionMarketLister,
+        ownerAddr: ownerAddr
+      },
+      signerDataList: signerDataList.map(function(signerData){return {addr: signerData.addr, value: signerData.value};})
+    };
+  }
+
   function getActiveUsers(contract, marketHashes){
     var filter = {};
     if (marketHashes){
@@ -569,6 +585,7 @@
     digioptionsMarketsAbi: digioptionsMarketsAbi,
     digioptionsMarketListerAbi: digioptionsMarketListerAbi,
     contractInfoToContractDescription: contractInfoToContractDescription,
+    marketListerInfoToMarketListerDescription: marketListerInfoToMarketListerDescription,
     getActiveUsers: getActiveUsers,
     sortEventsByExpirationDatetime: sortEventsByExpirationDatetime,
     filterEventsByExpirationDatetime: filterEventsByExpirationDatetime,
