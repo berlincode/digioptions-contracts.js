@@ -19,7 +19,7 @@
   ],
   "contract create testContract": [
     {
-      "gasUsed": "783551",
+      "gasUsed": "783539",
       "usd": "1.410"
     }
   ],

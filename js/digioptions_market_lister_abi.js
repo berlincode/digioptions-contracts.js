@@ -534,7 +534,7 @@
           "components": [
             {
               "internalType": "address",
-              "name": "addr",
+              "name": "signerAddr",
               "type": "address"
             },
             {
@@ -669,7 +669,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "addr",
+          "name": "signerAddr",
           "type": "address"
         },
         {

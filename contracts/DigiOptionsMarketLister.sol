@@ -61,7 +61,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     }
 
     struct SignerData {
-        address addr;
+        address signerAddr;
         uint256 value;
     }
 
@@ -79,7 +79,10 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     uint256 private existingMarkets; /* one bit for each marketCategory and marketInterval */
 
     /* control variables/constants */
-    uint64 constant private transactionFeeMax = 10 finney; // 0.01 = 1.0% //TODO not in finney
+    uint256 constant private transactionFeeTotalMax = 10 finney; // 0.01 = 1.0% //TODO not in finney
+    uint256 constant private transactionFee0Min = 1 finney; // 0.001 = 0.1% //TODO not in finney
+    uint256 constant private transactionFee1Min = 1 finney; // 0.001 = 0.1% //TODO not in finney
+    uint256 constant private transactionFeeSignerMin = 1 finney; // 0.001 = 0.1% //TODO not in finney
     uint16 constant private openDelaySeconds = 600;
 
     address internal signerAddrFirst; /* the first signer (if exists) */
@@ -146,7 +149,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
             //infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_MARKET_CREATED_IDX)] // keep timestampMarketsCreated
             //infoValues[uint256(DigiOptionsLib.InfoValues.OFFER_MAX_BLOCKS_INTO_FUTURE_IDX)] // keep offerMaxBlocksInto_future
             //infoValues[uint256(DigiOptionsLib.InfoValues.PAYOUT_PER_NANO_OPTION_EXP_IDX)] // keep payoutPerNanoOption
-            infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS)] = existingMarkets;
+            infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS_IDX)] = existingMarkets;
         }
 
         return infoValues;
@@ -162,22 +165,25 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
         listerValues[uint256(DigiOptionsLib.InfoLister.VERSION_MARKET_LISTER_IDX)] = VERSION;
         listerValues[uint256(DigiOptionsLib.InfoLister.OWNER_IDX)] = uint256(owner);
-        listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE_MAX)] = uint256(transactionFeeMax);
-        listerValues[uint256(DigiOptionsLib.InfoLister.OPEN_DELAY_SECONDS)] = uint256(openDelaySeconds);
+        listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE_TOTAL_MAX_IDX)] = transactionFeeTotalMax;
+        listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE0_MIN_IDX)] = transactionFee0Min;
+        listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE1_MIN_IDX)] = transactionFee1Min;
+        listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE_SIGNER_MIN_IDX)] = transactionFeeSignerMin;
+        listerValues[uint256(DigiOptionsLib.InfoLister.OPEN_DELAY_SECONDS_IDX)] = uint256(openDelaySeconds);
 
         uint256 numEntries = signerMapNumEntries;
         signerDataList = new SignerData[](numEntries);
 
-        address addr = signerAddrFirst;
+        address signerAddr = signerAddrFirst;
         uint256 idx;
         for (idx=0 ; idx < numEntries ; idx++){
 
             signerDataList[idx] = SignerData({
-                addr: addr,
-                value: signerEntriesMap[addr].value
+                signerAddr: signerAddr,
+                value: signerEntriesMap[signerAddr].value
             });
             // move on with next entry
-            addr = signerEntriesMap[addr].addrNext;
+            signerAddr = signerEntriesMap[signerAddr].addrNext;
         }
 
         return (listerValues, signerDataList);
@@ -260,7 +266,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         }
 
         if (
-            ((uint256(marketBaseData.transactionFee0)).add(uint256(marketBaseData.transactionFee1)).add(uint256(marketBaseData.transactionFeeSigner)) <= transactionFeeMax) &&
+            ((uint256(marketBaseData.transactionFee0)).add(uint256(marketBaseData.transactionFee1)).add(uint256(marketBaseData.transactionFeeSigner)) <= transactionFeeTotalMax) &&
             (marketBaseData.feeTaker0 == owner)
         ){
             return true;
@@ -398,37 +404,37 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     */
 
     /*
-    function setTransactionFeeMax (
-        uint64 transactionFeeMax_
+    function setTransactionFeeTotalMax (
+        uint64 transactionFeeTotalMax_
     )
         public
         onlyOwner
     {
-        transactionFeeMax = transactionFeeMax_;
+        transactionFeeTotalMax = transactionFeeTotalMax_;
     }
     */
 
     function setSigner (
-        address addr,
+        address signerAddr,
         uint256 value
     )
         public
         onlyOwner
     {
-        if (signerEntriesMap[addr].exists){
+        if (signerEntriesMap[signerAddr].exists){
             // just modify value
-            signerEntriesMap[addr].value = value;
+            signerEntriesMap[signerAddr].value = value;
             return;
         }
 
         // add new entry at the head of the list
         address addrTmp = signerAddrFirst;
-        signerEntriesMap[addr] = SignerListEntry({
+        signerEntriesMap[signerAddr] = SignerListEntry({
             value: value,
             addrNext: addrTmp,
             exists: true
         });
-        signerAddrFirst = addr;
+        signerAddrFirst = signerAddr;
         signerMapNumEntries = signerMapNumEntries + 1;
     }
 }

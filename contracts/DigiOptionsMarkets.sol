@@ -172,7 +172,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_MARKET_CREATED_IDX)] = timestamp; // timestampMarketsCreated
         infoValues[uint256(DigiOptionsLib.InfoValues.OFFER_MAX_BLOCKS_INTO_FUTURE_IDX)] = OFFER_MAX_BLOCKS_INTO_FUTURE;
         infoValues[uint256(DigiOptionsLib.InfoValues.ATOMIC_OPTION_PAYOUT_WEI_EXP_IDX)] = ATOMIC_OPTION_PAYOUT_WEI_EXP;
-        infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS)] = existingMarkets;
+        infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS_IDX)] = existingMarkets;
 
         return infoValues;
     }

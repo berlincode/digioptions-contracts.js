@@ -25,7 +25,7 @@ library DigiOptionsLib {
         TIMESTAMP_MARKET_CREATED_IDX, // 5
         OFFER_MAX_BLOCKS_INTO_FUTURE_IDX, // 6
         ATOMIC_OPTION_PAYOUT_WEI_EXP_IDX, // 7
-        EXISTING_MARKETS, // 8
+        EXISTING_MARKETS_IDX, // 8
 
         MAX // meta info
     }
@@ -33,8 +33,11 @@ library DigiOptionsLib {
     enum InfoLister {
         VERSION_MARKET_LISTER_IDX, // 0
         OWNER_IDX,
-        TRANSACTION_FEE_MAX,
-        OPEN_DELAY_SECONDS,
+        TRANSACTION_FEE_TOTAL_MAX_IDX,
+        TRANSACTION_FEE0_MIN_IDX,
+        TRANSACTION_FEE1_MIN_IDX,
+        TRANSACTION_FEE_SIGNER_MIN_IDX,
+        OPEN_DELAY_SECONDS_IDX,
 
         MAX // meta info
     }

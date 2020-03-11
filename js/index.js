@@ -81,15 +81,25 @@
     var listerValues = contractListerInfo.listerValues;
     var signerDataList = contractListerInfo.signerDataList;
 
-    var versionMarketLister = listerValues[0];
+    var versionMarketLister = Number(listerValues[0]);
     var ownerAddr = listerValues[1].toHexString();
+    var transactionFeeTotalMax = listerValues[2];
+    var transactionFee0Min = listerValues[3];
+    var transactionFee1Min = listerValues[4];
+    var transactionFeeSignerMin = listerValues[5];
+    var openDelaySeconds = listerValues[6];
 
     return {
       listerValues: {
         versionMarketLister: versionMarketLister,
-        ownerAddr: ownerAddr
+        ownerAddr: ownerAddr,
+        transactionFeeTotalMax: transactionFeeTotalMax,
+        transactionFee0Min: transactionFee0Min,
+        transactionFee1Min: transactionFee1Min,
+        transactionFeeSignerMin: transactionFeeSignerMin,
+        openDelaySeconds: openDelaySeconds
       },
-      signerDataList: signerDataList.map(function(signerData){return {addr: signerData.addr, value: signerData.value};})
+      signerDataList: signerDataList.map(function(signerData){return {signerAddr: signerData.signerAddr, value: signerData.value.toHexString()};})
     };
   }
 
