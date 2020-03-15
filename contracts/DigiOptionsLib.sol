@@ -76,10 +76,10 @@ library DigiOptionsLib {
         address signerAddr; /* address used to check the signed result (e.g. of factsigner) */
 
         uint8 marketInterval;
-        uint32 transactionFee0; /* fee in wei for every ether of value (payed by orderTaker) // TODO in wei? */
+        uint8 transactionFee0; /* fee in 1/100 per cent (payed by orderTaker) */
+        uint8 transactionFee1; /* fee in 1/100 per cent (payed by orderTaker) */
+        uint8 transactionFeeSigner; /* fee in 1/100 per cent (payed by orderTaker) */
         address feeTaker0;
-        uint32 transactionFee1; /* fee in wei for every ether of value (payed by orderTaker) */
-        uint32 transactionFeeSigner; /* fee in wei for every ether of value (payed by orderTaker) */
         address feeTaker1;
         int128[] strikes;
     }
@@ -134,7 +134,7 @@ library DigiOptionsLib {
     }
 
 
-// TODO this is only 'view' and not internal because of block.timestamp - maybe change that
+    // TODO this is only 'view' and not internal because of block.timestamp - maybe change that
     function calcMarketInterval (
         uint40 expirationDatetime
     )
@@ -144,7 +144,7 @@ library DigiOptionsLib {
     {
         uint8 marketInterval;
         uint256 secondsUntilExpiration = uint256(expirationDatetime).sub(uint256(block.timestamp));
-// TODO > or >= ?
+        // TODO > or >= ?
         require(secondsUntilExpiration < 730 * 24 * 60 * 60, "too far in the future");
         if (secondsUntilExpiration > 45 * 24 * 60 * 60) // > 45 days
             marketInterval = uint8(FactsignerDefines.MarketInterval.YEARLY);
@@ -199,7 +199,7 @@ library DigiOptionsLib {
     {
         bytes memory data;
         data = abi.encodePacked(
-//TODO from facthash?
+            // TODO from facthash?
             keccak256(abi.encodePacked(marketBaseData.underlyingString)), /* 'name' utf8 encoded */
             marketBaseData.expirationDatetime, /* 'settlement' unix epoch seconds UTC */
             marketBaseData.objectionPeriod, /* e.g. 3600 seconds */
@@ -210,21 +210,15 @@ library DigiOptionsLib {
             marketBaseData.ndigit, /* 'ndigit' number of digits (may be negative) */
 
             marketBaseData.marketInterval,
-            // TODO feetaker but not transactionFee?
             marketBaseData.feeTaker0,
             marketBaseData.feeTaker1,
             marketBaseData.signerAddr /* address used to check the signed result (e.g. of factsigner) */
-
-            // TODO? we need to add ALL MarketBaseData
-            //marketBaseData.transactionFee0, /* fee in wei for every ether of value (payed by orderTaker) */
-            //marketBaseData.transactionFee1//, /* fee in wei for every ether of value (payed by orderTaker) */
-            //marketBaseData.strikes
         );
         data = abi.encodePacked(
             data,
-            marketBaseData.transactionFee0, /* fee in wei for every ether of value (payed by orderTaker) // TODO wei? */
-            marketBaseData.transactionFee1, /* fee in wei for every ether of value (payed by orderTaker) */
-            marketBaseData.transactionFeeSigner, /* fee in wei for every ether of value (payed by orderTaker) */
+            marketBaseData.transactionFee0,
+            marketBaseData.transactionFee1,
+            marketBaseData.transactionFeeSigner,
             marketBaseData.strikes
         );
         return keccak256(data);
@@ -249,8 +243,9 @@ library DigiOptionsLib {
             marketBaseData.baseUnitExp, /* e.g. 18 -> baseUnit = 10**18 = 1000000000000000000 */
             marketBaseData.ndigit, /* 'ndigit' number of digits (may be negative) */
 
-            marketBaseData.marketInterval  // !! TODO
-// TODO add marketBaseData.signerAddr
+            marketBaseData.marketInterval,
+
+            marketBaseData.signerAddr
         );
         // if this is a named market we simply use strikes as factsigner's namedRanges
         if ((marketBaseData.config & uint8(FactsignerDefines.ConfigMask.ConfigMarketTypeIsStrikedMask) == 0)) {

@@ -18,15 +18,15 @@ library SafeCast {
         return uint(a);
     }
 
-    // TODO FIXME
+    // TODO
     function castToInt128(int256 a) internal pure returns(int128) {
-        //assert(a < (1 << 255));
+        assert(int128(a) == a);
         return int128(a);
     }
 
-    // TODO FIXME
+    // TODO
     function castToUint128(uint256 a) internal pure returns(uint128) {
-        //assert(a < (1 << 255));
+        assert(uint128(a) == a);
         return uint128(a);
     }
 }

@@ -1,9 +1,9 @@
 freedex-protocol
 ================
 
-[![Travis CI](https://travis-ci.org/berlincode/digioptions-contracts.js.svg?branch=master&style=flat)](https://travis-ci.org/berlincode/digioptions-contracts.js)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?label=license)](https://github.com/berlincode/digioptions-contracts.js/blob/master/LICENSE)
 [![Version](https://img.shields.io/github/v/tag/berlincode/digioptions-contracts.js.svg?label=version&sort=semver&logo=github)](https://github.com/berlincode/digioptions-contracts.js)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?label=license)](https://github.com/berlincode/digioptions-contracts.js/blob/master/LICENSE)
+[![Travis CI](https://travis-ci.org/berlincode/digioptions-contracts.js.svg?branch=master&style=flat)](https://travis-ci.org/berlincode/digioptions-contracts.js)
 
 Freedex peer to peer protocol for decentralized markets on DigiOptions (javascript / solidity)
 

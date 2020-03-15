@@ -99,7 +99,7 @@
         transactionFeeSignerMin: transactionFeeSignerMin,
         openDelaySeconds: openDelaySeconds
       },
-      signerDataList: signerDataList.map(function(signerData){return {signerAddr: signerData.signerAddr, value: signerData.value.toHexString()};})
+      signerDataList: signerDataList.map(function(signerData){return {signerAddr: web3.utils.toChecksumAddress(signerData.signerAddr), value: signerData.value.toHexString()};})
     };
   }
 
@@ -496,9 +496,9 @@
       {t: 'address', v: marketBaseData.feeTaker0},
       {t: 'address', v: marketBaseData.feeTaker1},
       {t: 'address', v: marketBaseData.signerAddr},
-      {t: 'uint32', v: marketBaseData.transactionFee0},
-      {t: 'uint32', v: marketBaseData.transactionFee1},
-      {t: 'uint32', v: marketBaseData.transactionFeeSigner}
+      {t: 'uint8', v: marketBaseData.transactionFee0},
+      {t: 'uint8', v: marketBaseData.transactionFee1},
+      {t: 'uint8', v: marketBaseData.transactionFeeSigner}
     ];
 
     // take special care of strikes int128 array
@@ -609,12 +609,12 @@
     versionToString: versionToString,
     versionMarketLister: {
       major: 0,
-      minor: 50,
+      minor: 52,
       bugfix: 0
     },
     versionMarkets: {
       major: 0,
-      minor: 50,
+      minor: 52,
       bugfix: 0
     },
   };

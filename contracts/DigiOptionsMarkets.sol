@@ -58,7 +58,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
     uint256 constant private VERSION = (
         (0 << 32) + /* major */
-        (50 << 16) + /* minor */
+        (52 << 16) + /* minor */
         0 /* bugfix */
     );
     uint256 constant private OFFER_MAX_BLOCKS_INTO_FUTURE = 12;
@@ -126,7 +126,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
     // this may result in liquidity change
     event LiquidityAddWithdraw(address indexed addr, uint256 datetime, int256 amount);
     event PositionChange(
-        // TODO optimize order for storage density?
+        // TODO optimize order for gas costs possible?
         uint256 indexed buyer,
         uint256 indexed seller,
         bytes32 indexed marketHash,
@@ -177,7 +177,6 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         return infoValues;
     }
 
-    // TODO test
     function liquidityGet()
         public
         view
@@ -279,7 +278,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
                 return DigiOptionsLib.UserState.PAYED_OUT;
             }
         }
-        // TODO this is not correct for named markets
+        // TODO for named markets one excess optionID is checked (which should not be a problem)
         for (uint256 optionID = 0; optionID <= market.marketBaseData.strikes.length; optionID++) {
             if (positions[optionID].rangeState > RANGESTATE_NOT_USED) {
                 return DigiOptionsLib.UserState.EXISTS;
@@ -297,7 +296,8 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         DigiOptionsLib.MarketBaseData memory marketBaseData = market.marketBaseData;
 
         // return user's total contract liquidity and positions for selected market
-        // TODO this is not correct for named markets
+
+        // TODO for named markets one excess optionID is checked (which should not be a problem)
         positions = new Position[](marketBaseData.strikes.length + 1);
 
         for (uint256 optionID = 0; optionID <= marketBaseData.strikes.length; optionID++) {
@@ -352,10 +352,9 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
         assert(marketBaseData.marketCategory < 64); // limit marketCategory (for now)
 
-        // TODO finney
-        assert((uint256(marketBaseData.transactionFee0)).add(uint256(marketBaseData.transactionFee1)).add(uint256(marketBaseData.transactionFeeSigner)) <= 50 finney); // max 5%
+        //assert((uint256(marketBaseData.transactionFee0)).add(uint256(marketBaseData.transactionFee1)).add(uint256(marketBaseData.transactionFeeSigner)) <= 500);
 
-        uint256 cnt; // TODO rename optionID
+        uint256 optionID;
         if ((marketBaseData.config & uint8(FactsignerDefines.ConfigMask.ConfigMarketTypeIsStrikedMask)) != 0) {
             /* striked market */
             /* check that we have at least one strike */
@@ -363,14 +362,14 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
             assert(marketBaseData.strikes.length < 32765); // our first optionID is 0
 
             /* check strikes are ordered */
-            for (cnt = 1; cnt < marketBaseData.strikes.length; cnt++) {
-                assert(marketBaseData.strikes[cnt-1] < marketBaseData.strikes[cnt]);
+            for (optionID = 1; optionID < marketBaseData.strikes.length; optionID++) {
+                assert(marketBaseData.strikes[optionID-1] < marketBaseData.strikes[optionID]);
             }
 
             /* check that the final settlement precision high enough for the supplied strikes */
             assert(int16(marketBaseData.baseUnitExp) >= marketBaseData.ndigit);
-            for (cnt = 0; cnt < marketBaseData.strikes.length; cnt++) {
-                assert((marketBaseData.strikes[cnt] % int256(10**uint256((int256(marketBaseData.baseUnitExp)-marketBaseData.ndigit)))) == 0);
+            for (optionID = 0; optionID < marketBaseData.strikes.length; optionID++) {
+                assert((marketBaseData.strikes[optionID] % int256(10**uint256((int256(marketBaseData.baseUnitExp)-marketBaseData.ndigit)))) == 0);
             }
         } else {
             /* named market */
@@ -440,22 +439,22 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
             return;
 
         uint256 winningOptionID;
-        uint256 cnt;
+        uint256 optionID;
         if ((market.marketBaseData.config & uint8(FactsignerDefines.ConfigMask.ConfigMarketTypeIsStrikedMask)) != 0) {
             /* striked market */
             winningOptionID = market.marketBaseData.strikes.length;
-            for (cnt = 0; cnt < market.marketBaseData.strikes.length; cnt++) {
-                if (value < market.marketBaseData.strikes[cnt]) {
-                    winningOptionID = cnt;
+            for (optionID = 0; optionID < market.marketBaseData.strikes.length; optionID++) {
+                if (value < market.marketBaseData.strikes[optionID]) {
+                    winningOptionID = optionID;
                     break;
                 }
             }
         } else {
             /* named market */
             winningOptionID = 0; // default in case nothing matches
-            for (cnt = 0; cnt < market.marketBaseData.strikes.length; cnt++) {
-                if (value == market.marketBaseData.strikes[cnt]) {
-                    winningOptionID = cnt;
+            for (optionID = 0; optionID < market.marketBaseData.strikes.length; optionID++) {
+                if (value == market.marketBaseData.strikes[optionID]) {
+                    winningOptionID = optionID;
                     break;
                 }
             }
@@ -464,36 +463,18 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         market.marketState.winningOptionID = uint16(winningOptionID);
         market.marketState.settled = true;
 
+        uint256 feeSum = uint256(market.marketBaseData.transactionFee0).add(uint256(market.marketBaseData.transactionFee1)).add(uint256(market.marketBaseData.transactionFeeSigner));
+        uint256 feePart = uint256(market.marketState.fee) / feeSum;
+        liquidityUser[market.marketBaseData.feeTaker0] = liquidityUser[market.marketBaseData.feeTaker0].add(feePart.mul(market.marketBaseData.transactionFee0));
+        liquidityUser[market.marketBaseData.feeTaker1] = liquidityUser[market.marketBaseData.feeTaker1].add(feePart.mul(market.marketBaseData.transactionFee1));
+        liquidityUser[market.marketBaseData.signerAddr] = liquidityUser[market.marketBaseData.signerAddr].add(feePart.mul(market.marketBaseData.transactionFeeSigner));
+
         emit MarketSettlement(marketHash);
-
-// TODO handle payout
-/*
-        // TODO split fee and add fee to feeTaker1, too
-        uint256 microOptionsTraded = market.fee.div( // TODO rename
-            uint256(market.marketBaseData.transactionFee0).add(uint256(market.marketBaseData.transactionFee1))..add(uint256(marketBaseData.transactionFeeSigner))
-        );
-        //liquidityUser[market.marketBaseData.feeTaker0] = liquidityUser[market.marketBaseData.feeTaker0].add(market.fee);
-*/
-        // TODO rename feeT
-        uint256 feeT = uint256(market.marketBaseData.transactionFee0).add(uint256(market.marketBaseData.transactionFee1)).add(uint256(market.marketBaseData.transactionFeeSigner));
-        if (feeT > 0){ // TODO remove?
-            // TODO rename a
-            uint256 a = uint256(market.marketState.fee) / feeT;
-            liquidityUser[market.marketBaseData.feeTaker0] = liquidityUser[market.marketBaseData.feeTaker0].add(a.mul(market.marketBaseData.transactionFee0));
-            liquidityUser[market.marketBaseData.feeTaker1] = liquidityUser[market.marketBaseData.feeTaker1].add(a.mul(market.marketBaseData.transactionFee1));
-            liquidityUser[market.marketBaseData.signerAddr] = liquidityUser[market.marketBaseData.signerAddr].add(a.mul(market.marketBaseData.transactionFeeSigner));
-        }
-/*
-        liquidityUser[market.marketBaseData.feeTaker1] = liquidityUser[market.marketBaseData.feeTaker1].add(microOptionsTraded.mul(market.marketBaseData.transactionFee1));
-
-        // emit event once if all users have been payed out
-        //emit MarketSettlement(marketHash);
-*/
 
         freeLiquidity(
             marketHash,
             users,
-            offerHash // TODO offerHash
+            offerHash
         );
     }
 
@@ -526,24 +507,39 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
                     user
                 );
 
-                int256 result = int256(market.positions[user][winningOptionID].value).sub(minPosition);
+                int256 pos = int256(market.positions[user][winningOptionID].value);
+                int256 size = pos.sub(minPosition);
 
                 market.positions[user][winningOptionID].rangeState = RANGESTATE_PAYED_OUT;
             
-                liquidityUser[user] = liquidityUser[user].add(result.mul(ATOMIC_OPTION_PAYOUT_WEI).castToUint());
-/*
-                emit PositionChange(
-                    //uint256(buyer) + uint256(market.userData[msg.sender].state),
-                    uint256(buyer),
-                    uint256(seller),
-                    orderOffer.marketHash,
-                    block.timestamp,
-                    orderOffer.optionID,
-                    orderOffer.pricePerOption,
-                    sizeAcceptPossible,
-                    offerHash
-                );
-*/
+                liquidityUser[user] = liquidityUser[user].add(size.mul(ATOMIC_OPTION_PAYOUT_WEI).castToUint());
+                
+                // TODO a cheaper event would do too
+                if (pos >= 0) {
+                    emit PositionChange(
+                        //uint256(buyer) + uint256(market.userData[msg.sender].state),
+                        0, // indicates final payout
+                        uint256(user),
+                        marketHash,
+                        block.timestamp,
+                        winningOptionID,
+                        uint256(ATOMIC_OPTION_PAYOUT_WEI),
+                        uint256(pos),
+                        0
+                    );
+                } else {
+                    emit PositionChange(
+                        //uint256(buyer) + uint256(market.userData[msg.sender].state),
+                        uint256(user),
+                        0, // indicates final payout
+                        marketHash,
+                        block.timestamp,
+                        winningOptionID,
+                        uint256(ATOMIC_OPTION_PAYOUT_WEI),
+                        uint256(-pos),
+                        0
+                    );
+                }
             }
 
         }
@@ -588,17 +584,16 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
             )) {
             sizeAccept = 0;
             // TODO return immediately?
+        } else if (market.offersAccepted[offerHash].add(sizeAccept) > orderOffer.size) {
+            sizeAccept = orderOffer.size.sub(market.offersAccepted[offerHash]);
         }
 
-        if (market.offersAccepted[offerHash].add(sizeAccept) > orderOffer.size)
-            sizeAccept = orderOffer.size.sub(market.offersAccepted[offerHash]);
-
         uint256 value = sizeAccept.mul(orderOffer.pricePerOption);
-// TODO precalcuate
-        transactionFeeAmount = sizeAccept.mul(
+
+        // TODO precalcuate sum of transactions fees
+        transactionFeeAmount = value.div(10000).mul(
             uint256(market.marketBaseData.transactionFee0).add(uint256(market.marketBaseData.transactionFee1)).add(uint256(market.marketBaseData.transactionFeeSigner))
         );
-
 
         liquidityOfferOwner = getLiquidityAfterTrade(
             market,
@@ -681,7 +676,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
         liquidityUser[orderOffer.offerOwner] = liquidityOfferOwner.castToUint();
         liquidityUser[msg.sender] = liquidityOfferTaker.castToUint();
-        market.marketState.fee = uint256(market.marketState.fee).add(transactionFeeAmount).castToUint128(); // TODO
+        market.marketState.fee = uint256(market.marketState.fee).add(transactionFeeAmount).castToUint128();
 
         {
         // update positions

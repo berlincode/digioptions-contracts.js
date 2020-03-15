@@ -94,9 +94,9 @@ function loadBeforeAndAfter(self) {
       signerAddr: this.accountSign.address,
       feeTaker0: this.accountOwnerAddress,
       feeTaker1: this.accountOwnerAddress, // '0x0000000000000000000000000000000000000000',
-      transactionFee0: factsigner.parseFloatToBn('0.001', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFee1: factsigner.parseFloatToBn('0.002', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.2 percent of the traded value
-      transactionFeeSigner: factsigner.parseFloatToBn('0.0005', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.05 percent of the traded value
+      transactionFee0: 10, // 0.1 percent of the traded value
+      transactionFee1: 20, // 0.2 percent of the traded value
+      transactionFeeSigner: 5, // 0.05 percent of the traded value
     };
     this.marketBaseData1 = {
       underlyingString: 'BTC2\0USD',
@@ -121,9 +121,9 @@ function loadBeforeAndAfter(self) {
       signerAddr: this.accountSign.address,
       feeTaker0: this.accountOwnerAddress,
       feeTaker1: this.accountOwnerAddress, //'0x0000000000000000000000000000000000000000',
-      transactionFee0: factsigner.parseFloatToBn('0.001', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFee1: factsigner.parseFloatToBn('0.002', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFeeSigner: factsigner.parseFloatToBn('0.0005', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.05 percent of the traded value
+      transactionFee0: 10, // 0.1 percent of the traded value
+      transactionFee1: 20, // 0.2 percent of the traded value
+      transactionFeeSigner: 5, // 0.05 percent of the traded value
     };
     this.marketBaseData2 = {
       underlyingString: 'BTC3\0USD',
@@ -149,9 +149,9 @@ function loadBeforeAndAfter(self) {
       signerAddr: this.accountSign.address,
       feeTaker0: this.accountOwnerAddress,
       feeTaker1: this.accountOwnerAddress, // '0x0000000000000000000000000000000000000000',
-      transactionFee0: factsigner.parseFloatToBn('0.001', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFee1: factsigner.parseFloatToBn('0.002', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFeeSigner: factsigner.parseFloatToBn('0.0005', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.05 percent of the traded value
+      transactionFee0: 10, // 0.1 percent of the traded value
+      transactionFee1: 20, // 0.2 percent of the traded value
+      transactionFeeSigner: 5, // 0.05 percent of the traded value
     };
     this.marketBaseData3 = {
       underlyingString: 'BTC-too-low\0USD',
@@ -173,9 +173,9 @@ function loadBeforeAndAfter(self) {
       signerAddr: this.accountSign.address,
       feeTaker0: this.accountOwnerAddress,
       feeTaker1: this.accountOwnerAddress, //'0x0000000000000000000000000000000000000000',
-      transactionFee0: factsigner.parseFloatToBn('0.001', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFee1: factsigner.parseFloatToBn('0.002', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.1 percent of the traded value
-      transactionFeeSigner: factsigner.parseFloatToBn('0.0005', digioptionsContracts.constants.atomicOptionPayoutWeiExp).toString(), // 0.05 percent of the traded value
+      transactionFee0: 10, // 0.1 percent of the traded value
+      transactionFee1: 20, // 0.2 percent of the traded value
+      transactionFeeSigner: 5, // 0.05 percent of the traded value
     };
 
     this.factHash0 = factsigner.factHash(this.marketBaseData0);
@@ -384,7 +384,7 @@ describe('test createMarket and getMarketDataList', function() {
   });
 
 
-  it('add market #0 (by accountOwner)', async function() {
+  it('add market #0 (by marketLister owner)', async function() {
     const signature = factsigner.signFactsignerMessage(this.factHash0, this.accountSign.privateKey);
 
     const marketDataBefore = await this.marketsContract.methods.getMarketDataByMarketHash(addrZero, this.marketHash0).call();

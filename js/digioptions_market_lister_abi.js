@@ -62,9 +62,9 @@
         },
         {
           "indexed": false,
-          "internalType": "uint16",
-          "name": "openDelaySeconds",
-          "type": "uint16"
+          "internalType": "uint40",
+          "name": "openTime",
+          "type": "uint40"
         },
         {
           "indexed": false,
@@ -145,24 +145,24 @@
               "type": "uint8"
             },
             {
-              "internalType": "uint32",
+              "internalType": "uint8",
               "name": "transactionFee0",
-              "type": "uint32"
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionFee1",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionFeeSigner",
+              "type": "uint8"
             },
             {
               "internalType": "address",
               "name": "feeTaker0",
               "type": "address"
-            },
-            {
-              "internalType": "uint32",
-              "name": "transactionFee1",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "transactionFeeSigner",
-              "type": "uint32"
             },
             {
               "internalType": "address",
@@ -296,24 +296,24 @@
                   "type": "uint8"
                 },
                 {
-                  "internalType": "uint32",
+                  "internalType": "uint8",
                   "name": "transactionFee0",
-                  "type": "uint32"
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "transactionFee1",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "transactionFeeSigner",
+                  "type": "uint8"
                 },
                 {
                   "internalType": "address",
                   "name": "feeTaker0",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "transactionFee1",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "transactionFeeSigner",
-                  "type": "uint32"
                 },
                 {
                   "internalType": "address",
@@ -441,24 +441,24 @@
                   "type": "uint8"
                 },
                 {
-                  "internalType": "uint32",
+                  "internalType": "uint8",
                   "name": "transactionFee0",
-                  "type": "uint32"
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "transactionFee1",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "transactionFeeSigner",
+                  "type": "uint8"
                 },
                 {
                   "internalType": "address",
                   "name": "feeTaker0",
                   "type": "address"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "transactionFee1",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "transactionFeeSigner",
-                  "type": "uint32"
                 },
                 {
                   "internalType": "address",
@@ -619,24 +619,24 @@
               "type": "uint8"
             },
             {
-              "internalType": "uint32",
+              "internalType": "uint8",
               "name": "transactionFee0",
-              "type": "uint32"
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionFee1",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionFeeSigner",
+              "type": "uint8"
             },
             {
               "internalType": "address",
               "name": "feeTaker0",
               "type": "address"
-            },
-            {
-              "internalType": "uint32",
-              "name": "transactionFee1",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "transactionFeeSigner",
-              "type": "uint32"
             },
             {
               "internalType": "address",

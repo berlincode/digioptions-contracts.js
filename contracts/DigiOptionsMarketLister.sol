@@ -57,7 +57,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     struct SignerListEntry {
         uint256 value;
         address addrNext;
-        bool exists; // TODO use
+        bool exists;
     }
 
     struct SignerData {
@@ -67,7 +67,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
     uint256 constant private VERSION = (
         (0 << 32) + /* major */
-        (50 << 16) + /* minor */
+        (52 << 16) + /* minor */
         0 /* bugfix */
     );
 
@@ -79,10 +79,10 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     uint256 private existingMarkets; /* one bit for each marketCategory and marketInterval */
 
     /* control variables/constants */
-    uint256 constant private transactionFeeTotalMax = 10 finney; // 0.01 = 1.0% //TODO not in finney
-    uint256 constant private transactionFee0Min = 1 finney; // 0.001 = 0.1% //TODO not in finney
-    uint256 constant private transactionFee1Min = 1 finney; // 0.001 = 0.1% //TODO not in finney
-    uint256 constant private transactionFeeSignerMin = 1 finney; // 0.001 = 0.1% //TODO not in finney
+    uint256 constant private transactionFeeTotalMax = 100; // 1.0%
+    uint256 constant private transactionFee0Min = 10; // 0.1%
+    uint256 constant private transactionFee1Min = 10; // 0.1%
+    uint256 constant private transactionFeeSignerMin = 5; // 0.05%
     uint16 constant private openDelaySeconds = 600;
 
     address internal signerAddrFirst; /* the first signer (if exists) */
@@ -91,10 +91,9 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
     /* variables */
     struct MarketBest {
-        bytes32 marketHash; // TODO bytes16?
-        uint64 transactionFee0; // TODO remove or keep it?
-        uint40 time;
-        uint16 openDelaySeconds;
+        bytes32 marketHash;
+        uint8 transactionFee0;
+        uint40 openTime;
     }
     mapping(bytes32 => MarketBest) internal marketsBest; // mapping from baseMarketHash
     mapping(bytes32 => bool) internal isTestMarket; // mapping from marketHash
@@ -110,7 +109,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         uint40 expirationDatetime,
         uint8 indexed marketInterval,
         uint8 indexed marketCategory,
-        uint16 openDelaySeconds,
+        uint40 openTime,
         string underlyingString
     );
 
@@ -235,16 +234,6 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         return digiOptionsMarkets.calcMarketInterval(expirationDatetime);
     }
 
-    /* TODO remove
-    function test()
-        public
-        view
-        returns (address owner, address sender)
-    {
-            return (owner, msg.sender);
-    }
-    */
-
     /*
     check, if a market might be possible to register (it does not need to be created for this
     and it is not checked if creating is possible at all)
@@ -257,16 +246,25 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         returns (bool registerPossible)
     {
 
+        {
+            if (msg.sender == owner){
+                // always allow owner
+                return true;
+            }
 
-        if (
-            (signerEntriesMap[marketBaseData.signerAddr].value == 0) && // TODO check bits!
-            (msg.sender != owner)
-        ){
-            return false;
+            if (
+                (signerEntriesMap[marketBaseData.signerAddr].value == 0) // TODO check bits!
+            ){
+                return false;
+            }
         }
 
+        /* check fees and feeTaker0 */
         if (
             ((uint256(marketBaseData.transactionFee0)).add(uint256(marketBaseData.transactionFee1)).add(uint256(marketBaseData.transactionFeeSigner)) <= transactionFeeTotalMax) &&
+            (marketBaseData.transactionFee0 >= transactionFee0Min) &&
+            (marketBaseData.transactionFee1 >= transactionFee1Min) &&
+            (marketBaseData.transactionFeeSigner >= transactionFeeSignerMin) &&
             (marketBaseData.feeTaker0 == owner)
         ){
             return true;
@@ -331,14 +329,15 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     {
         bytes32 baseMarketHash = DigiOptionsLib.calcBaseMarketHash(marketBaseData);
 
-        if (marketsBest[baseMarketHash].openDelaySeconds == 0) {
+        MarketBest storage marketBest = marketsBest[baseMarketHash];
+
+        if (marketBest.marketHash == 0) {
             // does not yet exist
             marketsBest[baseMarketHash] = MarketBest(
                 {
                 marketHash: marketHash,
                 transactionFee0: marketBaseData.transactionFee0,
-                time: uint40(block.timestamp),
-                openDelaySeconds: openDelaySeconds
+                openTime: uint40((msg.sender == owner)?0 : block.timestamp + openDelaySeconds)
                 }
             );
 
@@ -370,11 +369,12 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
                 openDelaySeconds,
                 marketBaseData.underlyingString
             );
-        } else if (
-            (marketBaseData.transactionFee0 > marketsBest[baseMarketHash].transactionFee0) &&
-            (block.timestamp <= marketsBest[baseMarketHash].time + marketsBest[baseMarketHash].openDelaySeconds)
+            return;
+        }
+        if (
+            (marketBaseData.transactionFee0 > marketBest.transactionFee0) &&
+            (block.timestamp < marketBest.openTime)
         ){
-            MarketBest storage marketBest = marketsBest[baseMarketHash];
             marketBest.marketHash = marketHash;
             marketBest.transactionFee0 = marketBaseData.transactionFee0;
         }
