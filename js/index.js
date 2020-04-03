@@ -39,7 +39,7 @@
     var contractType = Number(contractInfo[0]);
     var versionMarketLister = contractInfo[1];
     var versionMarkets = contractInfo[2];
-    var digiOptionsMarketsAddr = contractInfo[3].toHexString();
+    var marketsAddr = contractInfo[3].toHexString();
     var blockNumberCreated = Number(contractInfo[4]);
     var timestampMarketsCreated = Number(contractInfo[5]);
     var offer_max_blocks_into_future = contractInfo[6];
@@ -48,7 +48,7 @@
 
     var contractMarkets = new web3.eth.Contract(
       digioptionsMarketsAbi(),
-      digiOptionsMarketsAddr
+      marketsAddr
     );
     var contractMarketLister = ((contractType === constants.contractType.DIGIOPTIONSMARKETS)?
       null
@@ -68,7 +68,8 @@
       contract: contractMarketLister || contractMarkets,
       versionMarketLister: (contractType !== constants.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
       versionMarkets: versionFromInt(versionMarkets),
-      digiOptionsMarketsAddr: digiOptionsMarketsAddr,
+      marketsAddr: marketsAddr,
+      contractAddr: contractAddr,
       offer_max_blocks_into_future: offer_max_blocks_into_future,
       atomicOptionPayoutWeiExp: atomicOptionPayoutWeiExp,
       atomicOptionPayoutWei: web3Utils.toBN('10').pow(atomicOptionPayoutWeiExp),
@@ -235,6 +236,7 @@
 
       eventsRemainingReady: [], // these events are ready to serve
       eventsRemaining: [], // there might be still some events to be served before these events
+      exhausted: false
     };
   }
 
@@ -295,8 +297,8 @@
         // return updated marketSearch
         Object.assign({}, marketSearch, {
           eventsRemainingReady: eventsRemainingReady,
+          exhausted: (expirationDatetimeFilterList.length === 0) && (eventsRemainingReady.length === 0)
         }),
-        (expirationDatetimeFilterList.length === 0) && (eventsRemainingReady.length === 0) // exhausted
       ]);
     }
 
@@ -356,8 +358,8 @@
             filterMarketIntervalsTimestamp: filterMarketIntervalsTimestamp,
             eventsRemainingReady: eventsRemainingReady,
             eventsRemaining: eventsRemaining,
-          }),
-          (expirationDatetimeFilterList.length < filtersMax) && (eventsRemainingReady.length === 0) // exhausted
+            exhausted: (expirationDatetimeFilterList.length < filtersMax) && (eventsRemainingReady.length === 0)
+          })
         ]);
       });
   }
@@ -386,11 +388,9 @@
         .then(function(results) {
           var events = results[0];
           marketSearch = results[1];
-          var exhausted = results[2];
-          //console.log('new #', events.length);
           eventsAll = eventsAll.concat(events);
-          if (exhausted || (eventsAll.length > 0)) {
-            return [eventsAll, marketSearch, exhausted];
+          if (marketSearch.exhausted || (eventsAll.length > 0)) {
+            return [eventsAll, marketSearch];
           }
 
           return loop();
@@ -405,7 +405,6 @@
     var marketDataListAll = [];
     var marketSearch;
     var contractDescription;
-    var exhausted;
 
     function marketLoop(){
       return getMarketCreateEvents(
@@ -417,7 +416,6 @@
         .then(function(result) {
           var events = result[0];
           marketSearch = result[1]; //marketSearchNew
-          exhausted = result[2];
 
           //console.log('events', events);
           var marketKeys = events.map(function(evt){return evt.returnValues.marketKey;});
@@ -432,7 +430,7 @@
         })
         .then(function(marketDataList) {
           marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
-          if (exhausted){
+          if (marketSearch.exhausted){ // TODO
             return marketDataListAll;
           }
 
@@ -609,7 +607,7 @@
     versionToString: versionToString,
     versionMarketLister: {
       major: 0,
-      minor: 52,
+      minor: 53,
       bugfix: 0
     },
     versionMarkets: {

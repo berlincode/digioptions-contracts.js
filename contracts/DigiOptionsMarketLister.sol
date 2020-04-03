@@ -67,7 +67,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
     uint256 constant private VERSION = (
         (0 << 32) + /* major */
-        (52 << 16) + /* minor */
+        (53 << 16) + /* minor */
         0 /* bugfix */
     );
 
@@ -333,11 +333,13 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
         if (marketBest.marketHash == 0) {
             // does not yet exist
+
+            uint40 openTime = uint40((msg.sender == owner)? 0 : block.timestamp + openDelaySeconds);
             marketsBest[baseMarketHash] = MarketBest(
                 {
                 marketHash: marketHash,
                 transactionFee0: marketBaseData.transactionFee0,
-                openTime: uint40((msg.sender == owner)?0 : block.timestamp + openDelaySeconds)
+                openTime: openTime
                 }
             );
 
@@ -366,7 +368,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
                 marketBaseData.expirationDatetime,
                 marketBaseData.marketInterval,
                 marketBaseData.marketCategory,
-                openDelaySeconds,
+                openTime,
                 marketBaseData.underlyingString
             );
             return;
