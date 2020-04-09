@@ -1,8 +1,8 @@
 {
   "contract create marketsContract": [
     {
-      "gasUsed": "4020707",
-      "usd": "7.237"
+      "gasUsed": "4028228",
+      "usd": "7.250"
     }
   ],
   "liquidity add (user)": [

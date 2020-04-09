@@ -709,7 +709,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(2, (await getSignerDataList()).length);
   });
 
-  it('check contract versions and atomicOptionPayoutWeiExp', async function() {
+  it('check contract versions and atomicOptionPayoutWeiExpBN', async function() {
     const contractInfo = await this.marketListerContract.methods.getContractInfo().call();
     const contractDescription = digioptionsContracts.contractInfoToContractDescription(
       this.web3,
@@ -743,9 +743,9 @@ describe('test createMarket and getMarketDataList', function() {
     );
     */
 
-    assert.ok(contractDescription.atomicOptionPayoutWeiExp.eq(web3Utils.toBN('9')));
+    assert.ok(contractDescription.atomicOptionPayoutWeiExpBN.eq(web3Utils.toBN('9')));
 
-    const atomicOptionPayoutWeiBn = web3Utils.toBN('10').pow(web3Utils.toBN(contractDescription.atomicOptionPayoutWeiExp));
+    const atomicOptionPayoutWeiBn = web3Utils.toBN('10').pow(web3Utils.toBN(contractDescription.atomicOptionPayoutWeiExpBN));
     assert.ok(atomicOptionPayoutWeiBn.eq(web3Utils.toBN('1000000000')));
 
     // check that one whole option is worth 1 ether on win

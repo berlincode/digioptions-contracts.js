@@ -42,8 +42,8 @@
     var marketsAddr = contractInfo[3].toHexString();
     var blockNumberCreated = Number(contractInfo[4]);
     var timestampMarketsCreated = Number(contractInfo[5]);
-    var offer_max_blocks_into_future = contractInfo[6];
-    var atomicOptionPayoutWeiExp = web3Utils.toBN(contractInfo[7]);
+    var offerMaxBlocksIntoFuture = Number(contractInfo[6]);
+    var atomicOptionPayoutWeiExpBN = web3Utils.toBN(contractInfo[7]);
     var existingMarkets = web3Utils.toBN(contractInfo[8]);
 
     var contractMarkets = new web3.eth.Contract(
@@ -60,20 +60,26 @@
     );
 
     return {
-      blockNumberCreated: blockNumberCreated,
-      timestampMarketsCreated: timestampMarketsCreated,
+      contractAddr: contractAddr,
       contractType: contractType,
+
       contractMarkets: contractMarkets,
       contractMarketLister: contractMarketLister,
+
       contract: contractMarketLister || contractMarkets,
       versionMarketLister: (contractType !== constants.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
-      versionMarkets: versionFromInt(versionMarkets),
+
+      // constant values for markets contract
       marketsAddr: marketsAddr,
-      contractAddr: contractAddr,
-      offer_max_blocks_into_future: offer_max_blocks_into_future,
-      atomicOptionPayoutWeiExp: atomicOptionPayoutWeiExp,
-      atomicOptionPayoutWei: web3Utils.toBN('10').pow(atomicOptionPayoutWeiExp),
-      atomicOptionsPerFullOption: web3Utils.toBN('10').pow(web3Utils.toBN('18').sub(atomicOptionPayoutWeiExp)),
+      versionMarkets: versionFromInt(versionMarkets),
+      timestampMarketsCreated: timestampMarketsCreated,
+      blockNumberCreated: blockNumberCreated,
+      offerMaxBlocksIntoFuture: offerMaxBlocksIntoFuture,
+      atomicOptionPayoutWeiExpBN: atomicOptionPayoutWeiExpBN,
+      atomicOptionPayoutWeiBN: web3Utils.toBN('10').pow(atomicOptionPayoutWeiExpBN),
+      atomicOptionsPerFullOptionBN: web3Utils.toBN('10').pow(web3Utils.toBN('18').sub(atomicOptionPayoutWeiExpBN)),
+
+      // variable value which may change if new markets are opened
       existingMarkets: existingMarkets
     };
   }
