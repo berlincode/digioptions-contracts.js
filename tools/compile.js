@@ -10,6 +10,7 @@ const Compiler = require('@0x/sol-compiler').Compiler;
 const optionsDefault = {
   artifactsDir: path.join(__dirname, '..', 'artifacts'),
   contractsDir: path.join(__dirname, '..', 'contracts'),
+  solcVersion: '0.6.6',
   compilerSettings: {
     optimizer: {
       enabled: true,
