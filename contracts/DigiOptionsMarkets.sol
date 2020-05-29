@@ -62,7 +62,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
     );
     uint256 constant private OFFER_MAX_BLOCKS_INTO_FUTURE = 12;
 
-    // each nanoOption is worth 10**9 = 1000000000 wei in case of win
+    // each atomic option is worth 10**9 = 1000000000 wei in case of win
     uint256 constant private ATOMIC_OPTION_PAYOUT_WEI_EXP = 9;
     int256 constant private ATOMIC_OPTION_PAYOUT_WEI = int256(uint256(10)**ATOMIC_OPTION_PAYOUT_WEI_EXP);
 
@@ -316,6 +316,16 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         if (msg.value > 0) {
             liquidityUser[msg.sender] = liquidityUser[msg.sender].add(msg.value);
             emit LiquidityAddWithdraw(msg.sender, block.timestamp, int256(msg.value));
+        }
+    }
+
+    function liquidityAddFor (address user)
+        public
+        payable
+    {
+        if (msg.value > 0) {
+            liquidityUser[user] = liquidityUser[user].add(msg.value);
+            emit LiquidityAddWithdraw(user, block.timestamp, int256(msg.value));
         }
     }
 
