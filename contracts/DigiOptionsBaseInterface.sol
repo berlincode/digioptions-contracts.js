@@ -11,6 +11,7 @@
  elastic.code@gmail.com
  mail@digioptions.com
 
+ SPDX-License-Identifier: MIT
 
  MIT License
 
