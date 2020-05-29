@@ -42,8 +42,7 @@ pragma experimental ABIEncoderV2;
 
 import "factsigner/contracts/FactsignerDefines.sol";
 import "factsigner/contracts/FactsignerVerify.sol";
-//import_"@openzeppelin/contracts/math/SafeMath.sol";
-import "./SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./DigiOptionsLib.sol";
 
 abstract contract DigiOptionsBaseInterface {

@@ -10,8 +10,12 @@ const Compiler = require('@0x/sol-compiler').Compiler;
 const optionsDefault = {
   artifactsDir: path.join(__dirname, '..', 'artifacts'),
   contractsDir: path.join(__dirname, '..', 'contracts'),
-  solcVersion: '0.6.6',
+  //isOfflineMode: true,
+  solcVersion: '0.6.8',
   compilerSettings: {
+    //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
+    //remappings: [
+    //],
     optimizer: {
       enabled: true,
       runs: 20000,
