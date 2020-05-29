@@ -618,7 +618,7 @@
     },
     versionMarkets: {
       major: 0,
-      minor: 52,
+      minor: 53,
       bugfix: 0
     },
   };

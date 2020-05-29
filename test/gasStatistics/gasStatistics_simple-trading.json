@@ -1,8 +1,8 @@
 {
   "contract create marketsContract": [
     {
-      "gasUsed": "4028228",
-      "usd": "7.250"
+      "gasUsed": "4075817",
+      "usd": "7.336"
     }
   ],
   "freeLiquidity (1 user)": [
@@ -65,8 +65,8 @@
   ],
   "settlement (1 user)": [
     {
-      "gasUsed": "164970",
-      "usd": "0.296"
+      "gasUsed": "165037",
+      "usd": "0.297"
     }
   ]
 }

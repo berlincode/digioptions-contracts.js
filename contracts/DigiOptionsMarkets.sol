@@ -57,7 +57,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
     uint256 constant private VERSION = (
         (0 << 32) + /* major */
-        (52 << 16) + /* minor */
+        (53 << 16) + /* minor */
         0 /* bugfix */
     );
     uint256 constant private OFFER_MAX_BLOCKS_INTO_FUTURE = 12;

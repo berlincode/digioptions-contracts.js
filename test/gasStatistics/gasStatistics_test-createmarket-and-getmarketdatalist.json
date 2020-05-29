@@ -1,20 +1,20 @@
 {
   "contract create marketListerContract": [
     {
-      "gasUsed": "2161905",
+      "gasUsed": "2161893",
       "usd": "3.891"
     }
   ],
   "contract create marketsContract": [
     {
-      "gasUsed": "4028228",
-      "usd": "7.250"
+      "gasUsed": "4075817",
+      "usd": "7.336"
     }
   ],
   "contract create metaContract": [
     {
-      "gasUsed": "781084",
-      "usd": "1.405"
+      "gasUsed": "787571",
+      "usd": "1.417"
     }
   ],
   "contract create testContract": [
