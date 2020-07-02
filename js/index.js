@@ -141,6 +141,11 @@
         return evtB.returnValues.expirationDatetime - evtA.returnValues.expirationDatetime;
       }
 
+      // then sort by marketInterval (e.g. monthly before daily)
+      if (evtB.returnValues.marketInterval !== evtA.returnValues.marketInterval){
+        return evtA.returnValues.marketInterval - evtB.returnValues.marketInterval;
+      }
+
       // then sort by underlyingString
       if (evtB.returnValues.underlyingString !== evtA.returnValues.underlyingString){
         if (evtB.returnValues.underlyingString > evtA.returnValues.underlyingString)
