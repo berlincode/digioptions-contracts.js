@@ -1,0 +1,20 @@
+--- a/node_modules/@0x/sol-compiler/lib/src/utils/compiler.js
++++ b/node_modules/@0x/sol-compiler/lib/src/utils/compiler.js
+@@ -564,7 +564,7 @@
+  * Extract the solidity version (e.g., '0.5.9') from a solc version (e.g., `0.5.9+commit.34d3134f`).
+  */
+ function getSolidityVersionFromSolcVersion(solcVersion) {
+-    var m = /(\d+\.\d+\.\d+)\+commit\.[a-fA-F0-9]{8}/.exec(solcVersion);
++    var m = /(\d+\.\d+\.\d+)(\+commit\.[a-fA-F0-9]{8})?/.exec(solcVersion);
+     if (!m) {
+         throw new Error("Unable to parse solc version string \"" + solcVersion + "\"");
+     }
+@@ -575,7 +575,7 @@
+  * Strips any extra characters before and after the version + commit hash of a solc version string.
+  */
+ function normalizeSolcVersion(fullSolcVersion) {
+-    var m = /\d+\.\d+\.\d+\+commit\.[a-fA-F0-9]{8}/.exec(fullSolcVersion);
++    var m = /\d+\.\d+\.\d+(\+commit\.[a-fA-F0-9]{8})?/.exec(fullSolcVersion);
+     if (!m) {
+         throw new Error("Unable to parse solc version string \"" + fullSolcVersion + "\"");
+     }
