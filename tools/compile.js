@@ -11,7 +11,7 @@ const optionsDefault = {
   artifactsDir: path.join(__dirname, '..', 'artifacts'),
   contractsDir: path.join(__dirname, '..', 'contracts'),
   //isOfflineMode: true,
-  solcVersion: '0.6.8',
+  solcVersion: '0.6.11',
   compilerSettings: {
     //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
     //remappings: [

@@ -20,7 +20,7 @@
   }else {
     // Global (browser)
     root.digioptionsHelpers = factory(
-      root.web3.utils, // we expect that the whole Web3 was loaded an use only the utils from it
+      (new root.Web3()).utils, // we expect that the whole Web3 was loaded an use only the utils from it
       root.factsigner,
       root.digioptionsContracts
     );

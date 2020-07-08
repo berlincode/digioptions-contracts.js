@@ -368,7 +368,7 @@ describe('test createMarket and getMarketDataList', function() {
     // should contain 0 markets
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -376,7 +376,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -428,7 +428,7 @@ describe('test createMarket and getMarketDataList', function() {
     // should contain 1 market
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -437,7 +437,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -466,7 +466,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -476,7 +476,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -507,7 +507,7 @@ describe('test createMarket and getMarketDataList', function() {
     // should contain 3 markets
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -518,7 +518,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -547,7 +547,7 @@ describe('test createMarket and getMarketDataList', function() {
     // should (still) contain 3 markets
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -555,7 +555,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -591,7 +591,7 @@ describe('test createMarket and getMarketDataList', function() {
   it('should still contain 3 markets', async function() {
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -602,7 +602,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
     );
@@ -615,7 +615,7 @@ describe('test createMarket and getMarketDataList', function() {
   it('get markets with expiration (should return 2 markets)', async function() {
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       this.marketBaseData0.expirationDatetime, //expirationDatetime
     );
@@ -625,7 +625,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       this.marketBaseData0.expirationDatetime, //expirationDatetime
     );
@@ -663,7 +663,7 @@ describe('test createMarket and getMarketDataList', function() {
   it('should contain 2 (marketLister) / 3 (markets) non-testMarkets', async function() {
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketsContract.address,
+      this.marketsContract.options.address,
       addrZero,
       null, //expirationDatetime
       {
@@ -675,7 +675,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       addrZero,
       null, //expirationDatetime
       {
@@ -713,7 +713,7 @@ describe('test createMarket and getMarketDataList', function() {
     const contractInfo = await this.marketListerContract.methods.getContractInfo().call();
     const contractDescription = digioptionsContracts.contractInfoToContractDescription(
       this.web3,
-      this.marketListerContract.address,
+      this.marketListerContract.options.address,
       contractInfo
     );
 

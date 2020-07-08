@@ -25,7 +25,7 @@
   }else {
     // Global (browser)
     root.digioptionsContracts = factory(
-      root.web3.utils, // we expect that the whole Web3 was loaded an use only the utils from it
+      (new root.Web3()).utils, // we expect that the whole Web3 was loaded an use only the utils from it
       root.ethLibAccount, // we expect that the whole eth-lib was loaded an use only the eth-lib.accounts from it
       root.factsigner,
       root.digioptionsContractsConstants,
@@ -39,7 +39,7 @@
     var contractType = Number(contractInfo[0]);
     var versionMarketLister = contractInfo[1];
     var versionMarkets = contractInfo[2];
-    var marketsAddr = contractInfo[3].toHexString();
+    var marketsAddr = web3Utils.toHex(contractInfo[3]);
     var blockNumberCreated = Number(contractInfo[4]);
     var timestampMarketsCreated = Number(contractInfo[5]);
     var offerMaxBlocksIntoFuture = Number(contractInfo[6]);
@@ -89,7 +89,7 @@
     var signerDataList = contractListerInfo.signerDataList;
 
     var versionMarketLister = Number(listerValues[0]);
-    var ownerAddr = listerValues[1].toHexString();
+    var ownerAddr = web3Utils.toHex(listerValues[1]);
     var transactionFeeTotalMax = listerValues[2];
     var transactionFee0Min = listerValues[3];
     var transactionFee1Min = listerValues[4];
@@ -106,7 +106,13 @@
         transactionFeeSignerMin: transactionFeeSignerMin,
         openDelaySeconds: openDelaySeconds
       },
-      signerDataList: signerDataList.map(function(signerData){return {signerAddr: web3.utils.toChecksumAddress(signerData.signerAddr), value: signerData.value.toHexString()};})
+      signerDataList: signerDataList.map(
+        function(signerData){
+          return {
+            signerAddr: web3.utils.toChecksumAddress(signerData.signerAddr),
+            value: web3Utils.toHex(signerData.value)
+          };
+        })
     };
   }
 
@@ -126,8 +132,8 @@
         var users = {};
         for (var idx = 0 ; idx < eventsAll.length; idx++){
           var returnValues = eventsAll[idx].returnValues;
-          users[returnValues.buyer.toHexString().toLowerCase()] = true;
-          users[returnValues.seller.toHexString().toLowerCase()] = true;
+          users[web3Utils.toHex(returnValues.buyer).toLowerCase()] = true;
+          users[web3Utils.toHex(returnValues.seller).toLowerCase()] = true;
         }
         return Object.keys(users);
       });
