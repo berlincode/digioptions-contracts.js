@@ -39,7 +39,7 @@
     var contractType = Number(contractInfo[0]);
     var versionMarketLister = contractInfo[1];
     var versionMarkets = contractInfo[2];
-    var marketsAddr = web3Utils.toHex(contractInfo[3]);
+    var marketsAddr = web3.utils.padLeft(web3.utils.toHex(contractInfo[3]), 40); // convert to sane ethereum address
     var blockNumberCreated = Number(contractInfo[4]);
     var timestampMarketsCreated = Number(contractInfo[5]);
     var offerMaxBlocksIntoFuture = Number(contractInfo[6]);
@@ -89,7 +89,7 @@
     var signerDataList = contractListerInfo.signerDataList;
 
     var versionMarketLister = Number(listerValues[0]);
-    var ownerAddr = web3Utils.toHex(listerValues[1]);
+    var ownerAddr = web3Utils.padLeft(web3Utils.toHex(listerValues[1]), 40); // convert to sane ethereum address
     var transactionFeeTotalMax = listerValues[2];
     var transactionFee0Min = listerValues[3];
     var transactionFee1Min = listerValues[4];
@@ -132,8 +132,8 @@
         var users = {};
         for (var idx = 0 ; idx < eventsAll.length; idx++){
           var returnValues = eventsAll[idx].returnValues;
-          users[web3Utils.toHex(returnValues.buyer).toLowerCase()] = true;
-          users[web3Utils.toHex(returnValues.seller).toLowerCase()] = true;
+          users[web3Utils.padLeft(web3Utils.toHex(returnValues.buyer), 40)] = true;
+          users[web3Utils.padLeft(web3Utils.toHex(returnValues.seller), 40)] = true;
         }
         return Object.keys(users);
       });
