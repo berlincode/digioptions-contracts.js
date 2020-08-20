@@ -1,0 +1,24 @@
+diff --git a/node_modules/@openzeppelin/contracts/math/SafeMath.sol b/node_modules/@openzeppelin/contracts/math/SafeMath.sol
+index 80490ef..4b2a49d 100644
+--- a/node_modules/@openzeppelin/contracts/math/SafeMath.sol
++++ b/node_modules/@openzeppelin/contracts/math/SafeMath.sol
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: MIT
+ 
+-pragma solidity ^0.6.0;
++pragma solidity ^0.7.0;
+ 
+ /**
+  * @dev Wrappers over Solidity's arithmetic operations with added overflow
+diff --git a/node_modules/@openzeppelin/contracts/math/SignedSafeMath.sol b/node_modules/@openzeppelin/contracts/math/SignedSafeMath.sol
+index a8f51dc..6eee7d0 100644
+--- a/node_modules/@openzeppelin/contracts/math/SignedSafeMath.sol
++++ b/node_modules/@openzeppelin/contracts/math/SignedSafeMath.sol
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: MIT
+ 
+-pragma solidity ^0.6.0;
++pragma solidity ^0.7.0;
+ 
+ /**
+  * @title SignedSafeMath
