@@ -60,7 +60,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         (53 << 16) + /* minor */
         0 /* bugfix */
     );
-    uint256 constant private OFFER_MAX_BLOCKS_INTO_FUTURE = 12;
+    uint256 constant private OFFER_MAX_BLOCKS_INTO_FUTURE = 12; // increase for e.g. thundercore
 
     // each atomic option is worth 10**9 = 1000000000 wei in case of win
     uint256 constant private ATOMIC_OPTION_PAYOUT_WEI_EXP = 9;

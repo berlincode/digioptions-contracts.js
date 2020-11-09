@@ -15,7 +15,7 @@ const optionsDefault = {
   //solcVersion: '0.7.0+commit.9e61f92b.Emscripten.clang',
   //solcVersion: '0.7.0',
   compilerSettings: {
-    evmVersion: 'byzantium', // for thundercore (as of 2020-05)
+    //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
     //remappings: [
     //],
     optimizer: {
