@@ -138,7 +138,6 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
     /* This is the constructor */
     constructor ()
-        public
     {
         blockNumber = block.number;
         timestamp = block.timestamp;
@@ -520,9 +519,9 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
                 int256 size = pos.sub(minPosition);
 
                 market.positions[user][winningOptionID].rangeState = RANGESTATE_PAYED_OUT;
-            
+
                 liquidityUser[user] = liquidityUser[user].add(size.mul(ATOMIC_OPTION_PAYOUT_WEI).castToUint());
-                
+
                 // TODO a cheaper event would do too
                 if (pos >= 0) {
                     emit PositionChange(

@@ -51,7 +51,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
 
     /*
         we use a simple linked list - since the SignerListEntry is part of a map
-        the value remains directly accessible by the signer's address 
+        the value remains directly accessible by the signer's address
     */
     struct SignerListEntry {
         uint256 value;
@@ -113,7 +113,6 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
     );
 
     constructor (DigiOptionsMarkets addr)
-        public
     {
         owner = msg.sender;
         blockNumber = block.number;

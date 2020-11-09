@@ -11,7 +11,8 @@ const optionsDefault = {
   artifactsDir: path.join(__dirname, '..', 'artifacts'),
   contractsDir: path.join(__dirname, '..', 'contracts'),
   //isOfflineMode: true,
-  solcVersion: '0.7.0+commit.9e61f92b',
+  //solcVersion: '0.7.0+commit.9e61f92b',
+  solcVersion: '0.7.4+commit.3f05b770',
   //solcVersion: '0.7.0+commit.9e61f92b.Emscripten.clang',
   //solcVersion: '0.7.0',
   compilerSettings: {
