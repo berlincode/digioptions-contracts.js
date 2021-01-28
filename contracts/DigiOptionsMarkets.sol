@@ -35,7 +35,7 @@
 
 */
 
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "./DigiOptionsBaseInterface.sol";
@@ -165,7 +165,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         infoValues[uint256(DigiOptionsLib.InfoValues.CONTRACT_TYPE_IDX)] = uint256(DigiOptionsLib.ContractType.DIGIOPTIONSMARKETS);
         infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKET_LISTER_IDX)] = 0; // versionMarketLister
         infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKETS_IDX)] = VERSION; // versionMarkets
-        infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)] = uint256(address(this)); // digiOptionsMarketsAddr
+        infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)] = uint256(uint160(address(this))); // digiOptionsMarketsAddr
         infoValues[uint256(DigiOptionsLib.InfoValues.BLOCK_NUMBER_CREATED_IDX)] = blockNumber; // blockNumberCreated
         infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_MARKET_CREATED_IDX)] = timestamp; // timestampMarketsCreated
         infoValues[uint256(DigiOptionsLib.InfoValues.OFFER_MAX_BLOCKS_INTO_FUTURE_IDX)] = OFFER_MAX_BLOCKS_INTO_FUTURE;
@@ -189,8 +189,8 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         /* Remember to reduce the liquidity BEFORE */
         /* sending to prevent re-entrancy attacks */
         liquidityUser[msg.sender] = liquidityUser[msg.sender].sub(amount);
-        msg.sender.transfer(amount);
-        emit LiquidityAddWithdraw(msg.sender, block.timestamp, int256(-amount));
+        payable(msg.sender).transfer(amount);
+        emit LiquidityAddWithdraw(msg.sender, block.timestamp, -int256(amount));
     }
 
     /* returns all relevant market data - if marketHash does not exist marketBaseData.expirationDatetime is 0*/
@@ -375,9 +375,9 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
             }
 
             /* check that the final settlement precision high enough for the supplied strikes */
-            assert(int16(marketBaseData.baseUnitExp) >= marketBaseData.ndigit);
+            assert(int16(uint16(marketBaseData.baseUnitExp)) >= marketBaseData.ndigit);
             for (optionID = 0; optionID < marketBaseData.strikes.length; optionID++) {
-                assert((marketBaseData.strikes[optionID] % int256(10**uint256((int256(marketBaseData.baseUnitExp)-marketBaseData.ndigit)))) == 0);
+                assert((marketBaseData.strikes[optionID] % int256(10**uint256((int256(uint256(marketBaseData.baseUnitExp))-marketBaseData.ndigit)))) == 0);
             }
         } else {
             /* named market */
@@ -527,7 +527,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
                     emit PositionChange(
                         //uint256(buyer) + uint256(market.userData[msg.sender].state),
                         0, // indicates final payout
-                        uint256(user),
+                        uint256(uint160(user)),
                         marketHash,
                         block.timestamp,
                         winningOptionID,
@@ -538,7 +538,7 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
                 } else {
                     emit PositionChange(
                         //uint256(buyer) + uint256(market.userData[msg.sender].state),
-                        uint256(user),
+                        uint256(uint160(user)),
                         0, // indicates final payout
                         marketHash,
                         block.timestamp,
@@ -711,8 +711,8 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
 
         emit PositionChange(
             //uint256(buyer) + uint256(market.userData[msg.sender].state),
-            uint256(buyer),
-            uint256(seller),
+            uint256(uint160(buyer)),
+            uint256(uint160(seller)),
             orderOffer.marketHash,
             block.timestamp,
             orderOffer.optionID,

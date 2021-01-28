@@ -35,7 +35,7 @@
 
 */
 
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "./DigiOptionsBaseInterface.sol";
@@ -139,7 +139,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
             infoValues[uint256(DigiOptionsLib.InfoValues.CONTRACT_TYPE_IDX)] = uint256(DigiOptionsLib.ContractType.DIGIOPTIONSMARKETLISTER);
             infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKET_LISTER_IDX)] = VERSION;
             //infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKETS_IDX)] // keep versionMarkets
-            infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)] = uint256(address(digiOptionsMarkets));
+            infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)] = uint256(uint160(address(digiOptionsMarkets)));
         }
         {
             infoValues[uint256(DigiOptionsLib.InfoValues.BLOCK_NUMBER_CREATED_IDX)] = blockNumber;
@@ -161,7 +161,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         listerValues = new uint[](uint256(DigiOptionsLib.InfoLister.MAX));
 
         listerValues[uint256(DigiOptionsLib.InfoLister.VERSION_MARKET_LISTER_IDX)] = VERSION;
-        listerValues[uint256(DigiOptionsLib.InfoLister.OWNER_IDX)] = uint256(owner);
+        listerValues[uint256(DigiOptionsLib.InfoLister.OWNER_IDX)] = uint256(uint160(owner));
         listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE_TOTAL_MAX_IDX)] = transactionFeeTotalMax;
         listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE0_MIN_IDX)] = transactionFee0Min;
         listerValues[uint256(DigiOptionsLib.InfoLister.TRANSACTION_FEE1_MIN_IDX)] = transactionFee1Min;
