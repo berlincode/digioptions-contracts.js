@@ -1,13 +1,15 @@
 diff --git a/node_modules/solidity-parser-antlr/dist/index.js b/node_modules/solidity-parser-antlr/dist/index.js
-index 1187303..cb6a99c 100644
+index 1187303..f1ae04c 100644
 --- a/node_modules/solidity-parser-antlr/dist/index.js
 +++ b/node_modules/solidity-parser-antlr/dist/index.js
-@@ -47,6 +47,8 @@ function tokenize(input, options) {
+@@ -47,6 +47,10 @@ function tokenize(input, options) {
  }
  
  function parse(input, options) {
 +  /* ulfi: hotfix until solidity-parser-antlr support 'abstract' from solc>=0.6.0 */
-+  input = input.replace(/abstract/g, '        ');
++  input = input.replace(/\babstract\b/g, '        ');
++  /* ulfi: hotfix until solidity-parser-antlr support 'payable' in new context from solc>=0.8.0 */
++  input = input.replace(/\bpayable\b/g, '       ');
    options = options || {};
  
    var chars = antlr4.CharStreams.fromString(input);

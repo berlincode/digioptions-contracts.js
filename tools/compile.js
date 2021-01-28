@@ -11,10 +11,9 @@ const optionsDefault = {
   artifactsDir: path.join(__dirname, '..', 'artifacts'),
   contractsDir: path.join(__dirname, '..', 'contracts'),
   //isOfflineMode: true,
-  //solcVersion: '0.7.0+commit.9e61f92b',
+  // see https://solc-bin.ethereum.org/bin/list.json
+  //solcVersion: '0.8.1+commit.df193b15',
   solcVersion: '0.7.4+commit.3f05b770',
-  //solcVersion: '0.7.0+commit.9e61f92b.Emscripten.clang',
-  //solcVersion: '0.7.0',
   compilerSettings: {
     //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
     //remappings: [
