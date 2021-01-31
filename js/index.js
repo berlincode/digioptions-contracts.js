@@ -6,7 +6,7 @@
     // AMD
     define([
       'web3-utils',
-      'eth-lib-account', // eth-lib/account
+      'eth-lib/lib/account',
       'factsigner',
       './constants',
       './digioptions_markets_abi',
