@@ -12,8 +12,8 @@ const optionsDefault = {
   contractsDir: path.join(__dirname, '..', 'contracts'),
   //isOfflineMode: true,
   // see https://solc-bin.ethereum.org/bin/list.json
-  //solcVersion: '0.8.1+commit.df193b15',
-  solcVersion: '0.7.4+commit.3f05b770',
+  //solcVersion: '0.7.4+commit.3f05b770',
+  solcVersion: '0.7.6+commit.7338295f',
   compilerSettings: {
     //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
     //remappings: [
