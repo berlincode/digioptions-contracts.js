@@ -13,7 +13,7 @@ const optionsDefault = {
   //isOfflineMode: true,
   // see https://solc-bin.ethereum.org/bin/list.json
   //solcVersion: '0.7.4+commit.3f05b770',
-  solcVersion: '0.7.6+commit.7338295f',
+  //solcVersion: '0.7.6+commit.7338295f',
   //solcVersion: '0.8.0+commit.c7dfd78e',
   //solcVersion: '0.8.1+commit.df193b15',
   //solcVersion: '0.8.2+commit.661d1103',
@@ -21,6 +21,11 @@ const optionsDefault = {
   //solcVersion: '0.8.4+commit.c7e474f2',
   //solcVersion: '0.8.5+commit.a4f2e591',
   //solcVersion: '0.8.6+commit.11564f7e',
+  //
+  //solcVersion: '0.8.7+commit.e28d00a7',
+  //solcVersion: '0.8.8+commit.dddeac2f',
+  solcVersion: '0.8.9+commit.e5eed63a',
+  //solcVersion: '0.8.10+commit.fc410830',
   compilerSettings: {
     //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
     //remappings: [

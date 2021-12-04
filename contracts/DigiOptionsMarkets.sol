@@ -43,8 +43,8 @@ import "./DigiOptionsLib.sol";
 import "./SafeCast.sol";
 import "factsigner/contracts/FactsignerDefines.sol";
 import "factsigner/contracts/FactsignerVerify.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/math/SignedSafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
 
 
 contract DigiOptionsMarkets is DigiOptionsBaseInterface {

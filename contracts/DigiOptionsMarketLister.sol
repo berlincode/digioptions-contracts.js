@@ -41,8 +41,8 @@ pragma experimental ABIEncoderV2;
 import "./DigiOptionsBaseInterface.sol";
 import "./DigiOptionsMarkets.sol";
 import "./DigiOptionsLib.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/math/SignedSafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SignedSafeMath.sol";
 
 
 contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
