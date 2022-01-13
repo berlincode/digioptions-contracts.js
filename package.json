@@ -56,7 +56,7 @@
     "@0x/sol-coverage": "^4.0.0",
     "@0x/sol-profiler": "^4.0.0",
     "@0x/sol-trace": "^3.0.0",
-    "@openzeppelin/contracts": "~4.4.0",
+    "@openzeppelin/contracts": "~4.4.2",
     "eslint": "^8.4.0",
     "ethlint": "^1.2.5",
     "ganache-core": "^2.11.0",
