@@ -10,10 +10,11 @@
     "url": "https://www.digioptions.com"
   },
   "scripts": {
+    "build": "shx rm -rf dist/cjs dist/mjs dist/umd && tsc -p tsconfig-mjs.json && tsc -p tsconfig-cjs.json && tsc -p tsconfig-umd.json",
     "clean": "shx rm -rf coverage/*.json coverage/coverage",
     "compile": "./tools/compile.js",
     "ethlint": "solium --dir contracts",
-    "eslint": "eslint *.cjs ./js/*.js ./test* ./tools",
+    "eslint": "eslint *.cjs js/*.js src/ ./test* ./tools",
     "coverage": "cd coverage && istanbul report html && open-cli coverage/index.html",
     "profiler": "cd profiler && istanbul report html && open-cli coverage/index.html",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
@@ -21,6 +22,7 @@
   },
   "files": [
     "artifacts/*.json",
+    "dist",
     "js/index.js",
     "js/constants.js",
     "js/digioptions_markets_abi.js",
@@ -64,6 +66,7 @@
     "open-cli": "^7.0.0",
     "mocha": "^9.0.0",
     "shx": "^0.3.2",
-    "solc": "0.8.9"
+    "solc": "0.8.9",
+    "typescript": "^4.5.4"
   }
 }
