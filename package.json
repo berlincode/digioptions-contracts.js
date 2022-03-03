@@ -13,7 +13,7 @@
     "clean": "shx rm -rf coverage/*.json coverage/coverage",
     "compile": "./tools/compile.js",
     "ethlint": "solium --dir contracts",
-    "eslint": "eslint ./js/*.js ./test*/*.js ./tools/*.js",
+    "eslint": "eslint *.cjs ./js/*.js ./test* ./tools",
     "coverage": "cd coverage && istanbul report html && open-cli coverage/index.html",
     "profiler": "cd profiler && istanbul report html && open-cli coverage/index.html",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
