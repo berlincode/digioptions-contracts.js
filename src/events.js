@@ -44,43 +44,62 @@ async function getPastEvents(
   {
     numConcurrency = numConcurrencyDefault,
     maximumBlockRange = maximumBlockRangeDefault,
-    blockIterator = blockIteratorReverse,
     progressCallback = null, /* returns a value between 0 and 1 */
+    blockIterator = blockIteratorReverse,
   } = {}
 ){
   let eventLists = [];
   let iteratorIdx = 0; // fill eventLists in-order
   let iterationsFinished = 0; // for progress calculation
+  let error = null;
 
-  async function worker(iterator) {
-    for (let item of iterator) {
+  const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
+
+  async function worker() {
+    for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
       let eventsNew = [];
 
       for (let [eventName, filter] of eventNameAndFilterList) {
-        eventsNew = eventsNew.concat(
-          await contract.getPastEvents(eventName, {
-            filter: filter,
-            fromBlock: item.fromBlock,
-            toBlock: item.toBlock
-          })
-        );
+        if (error){
+          // if any worker has has an error we stop this one too
+          return;
+        }
+        try {
+          eventsNew = eventsNew.concat(
+            await contract.getPastEvents(
+              eventName,
+              {
+                filter: filter,
+                fromBlock: blockRange.fromBlock,
+                toBlock: blockRange.toBlock
+              }
+            )
+          );
+        } catch (err) {
+          error = err;
+          throw new Error(error);
+        }
       }
       eventLists[iteratorIdxCurrent] = eventsNew;
 
       /* update progress */
       iterationsFinished++;
       if (progressCallback){
+        // call progressCallback after each blockRange
         progressCallback(iterationsFinished/iterator.iterations(), eventsNew); // events might not be in order
       }
     }
   }
 
-  const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
-  // create/start numConcurrency worker() promises with the the same idential iterator 
-  const workers = new Array(numConcurrency).fill(iterator).map(worker);
+  // create/start numConcurrency worker() promises - all will use the same idential iterator
+  const workers = new Array(numConcurrency).fill(0).map(worker);
 
-  await Promise.allSettled(workers);
+  await Promise.all(workers); // reject immediately if any of the promises reject 
+
+  if (error){
+    throw new Error(error);
+  }
 
   // join all lists
   return [].concat.apply([], eventLists);
