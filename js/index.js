@@ -35,6 +35,7 @@
   }
 }(this, function (web3Utils, EthLibAccount, factsigner, constants, digioptionsMarketsAbi, digioptionsMarketListerAbi) {
 
+  /* returns a promise */
   function contractInfoToContractDescription(web3, contractAddr, contractInfo){
     var contractType = Number(contractInfo[0]);
     var versionMarketLister = contractInfo[1];
@@ -59,7 +60,7 @@
       )
     );
 
-    return {
+    return Promise.resolve({
       contractAddr: contractAddr,
       contractType: contractType,
 
@@ -81,7 +82,7 @@
 
       // variable value which may change if new markets are opened
       existingMarkets: existingMarkets
-    };
+    });
   }
 
   function marketListerInfoToMarketListerDescription(web3, contractListerInfo){
@@ -215,7 +216,7 @@
     contractDescription,
     expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */
     blockTimestampLatest,
-    toBlock, /* optional */
+    toBlock,
     options
   ){
     var contractMarkets = contractDescription.contractMarkets;
@@ -381,7 +382,7 @@
       });
   }
 
-  /* search for market creation events until (at least) one of the following pointe is true:
+  /* search for market creation events until (at least) one of the following points is true:
    *
    * limit is reached (if limit is given)
    * search is exhausted (expirationDatetimeStart or blockNumberCreated is reached)
@@ -462,12 +463,13 @@
         return contract.methods.getContractInfo().call();
       })
       .then(function(contractInfo) {
-
-        contractDescription = contractInfoToContractDescription(
+        return contractInfoToContractDescription(
           web3,
           contractAddr,
           contractInfo
         );
+      })
+      .then(function(contractDescription) {
 
         marketSearch = marketSearchSetup(
           contractDescription,
