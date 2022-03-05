@@ -85,6 +85,18 @@
     });
   }
 
+  /* returns a promise */
+  function getContractDescription(web3, contract){
+    return contract.methods.getContractInfo().call()
+      .then(function(contractInfo) {
+        return contractInfoToContractDescription(
+          web3,
+          contract.options.address,
+          contractInfo
+        );
+      });
+  }
+
   function marketListerInfoToMarketListerDescription(web3, contractListerInfo){
     var listerValues = contractListerInfo.listerValues;
     var signerDataList = contractListerInfo.signerDataList;
@@ -612,6 +624,7 @@
     digioptionsMarketsAbi: digioptionsMarketsAbi,
     digioptionsMarketListerAbi: digioptionsMarketListerAbi,
     contractInfoToContractDescription: contractInfoToContractDescription,
+    getContractDescription: getContractDescription,
     marketListerInfoToMarketListerDescription: marketListerInfoToMarketListerDescription,
     getActiveUsers: getActiveUsers,
     sortEventsByExpirationDatetime: sortEventsByExpirationDatetime,
