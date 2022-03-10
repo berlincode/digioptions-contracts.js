@@ -41,8 +41,8 @@
     var versionMarketLister = contractInfo[1];
     var versionMarkets = contractInfo[2];
     var marketsAddr = web3.utils.padLeft(web3.utils.toHex(contractInfo[3]), 40); // convert to sane ethereum address
-    var blockNumberCreated = Number(contractInfo[4]);
-    var timestampMarketsCreated = Number(contractInfo[5]);
+    var blockCreated = Number(contractInfo[4]);
+    var timestampCreatedMarkets = Number(contractInfo[5]);
     var offerMaxBlocksIntoFuture = Number(contractInfo[6]);
     var atomicOptionPayoutWeiExpBN = web3Utils.toBN(contractInfo[7]);
     var existingMarkets = web3Utils.toBN(contractInfo[8]);
@@ -60,35 +60,63 @@
       )
     );
 
-    return Promise.resolve({
-      contractAddr: contractAddr,
-      contractType: contractType,
+    var blockCreatedMarkets;
+    var blockCreatedMarketLister;
 
-      contractMarkets: contractMarkets,
-      contractMarketLister: contractMarketLister,
+    var prom;
+    if (contractType === constants.contractType.DIGIOPTIONSMARKETS){
+      prom = Promise.resolve();
+      blockCreatedMarkets = blockCreated;
+      blockCreatedMarketLister = null; 
+    } else {
+      // we have only blockCreated from contractMarketLister
+      // so we fetch blockCreated from contractMarkets
+      prom = contractMarkets.methods.getContractInfo().call()
+        .then(function(contractInfo){
+            blockCreatedMarkets = Number(contractInfo[4]);
+            blockCreatedMarketLister = blockCreated; 
+            return Promise.resolve();
+        })
+    }
 
-      contract: contractMarketLister || contractMarkets,
-      versionMarketLister: (contractType !== constants.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
+    return prom
+      .then(function(){
+        return {
+          contractAddr: contractAddr,
+          contractType: contractType,
 
-      // constant values for markets contract
-      marketsAddr: marketsAddr,
-      versionMarkets: versionFromInt(versionMarkets),
-      timestampMarketsCreated: timestampMarketsCreated,
-      blockNumberCreated: blockNumberCreated,
-      offerMaxBlocksIntoFuture: offerMaxBlocksIntoFuture,
-      atomicOptionPayoutWeiExpBN: atomicOptionPayoutWeiExpBN,
-      atomicOptionPayoutWeiBN: web3Utils.toBN('10').pow(atomicOptionPayoutWeiExpBN),
-      atomicOptionsPerFullOptionBN: web3Utils.toBN('10').pow(web3Utils.toBN('18').sub(atomicOptionPayoutWeiExpBN)),
+          contractMarkets: contractMarkets,
+          contractMarketLister: contractMarketLister,
 
-      // variable value which may change if new markets are opened
-      existingMarkets: existingMarkets
-    });
+          contract: contractMarketLister || contractMarkets, // TODO can we remove this?
+          versionMarketLister: (contractType !== constants.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
+
+          // constant values for markets contract
+          marketsAddr: marketsAddr,
+          versionMarkets: versionFromInt(versionMarkets),
+          timestampCreatedMarkets: timestampCreatedMarkets,
+
+          blockCreatedMarkets: blockCreatedMarkets,
+          blockCreatedMarketLister: blockCreatedMarketLister,
+
+          offerMaxBlocksIntoFuture: offerMaxBlocksIntoFuture,
+          atomicOptionPayoutWeiExpBN: atomicOptionPayoutWeiExpBN,
+          atomicOptionPayoutWeiBN: web3Utils.toBN('10').pow(atomicOptionPayoutWeiExpBN),
+          atomicOptionsPerFullOptionBN: web3Utils.toBN('10').pow(web3Utils.toBN('18').sub(atomicOptionPayoutWeiExpBN)),
+
+          // variable value which may change if new markets are opened
+          existingMarkets: existingMarkets
+        };
+      });
   }
 
   /* returns a promise */
   function getContractDescription(web3, contract){
     return contract.methods.getContractInfo().call()
       .then(function(contractInfo) {
+        if (! contractInfo){
+          throw new Error('reading contract info/version failed');
+        }
         return contractInfoToContractDescription(
           web3,
           contract.options.address,
@@ -233,8 +261,8 @@
   ){
     var contractMarkets = contractDescription.contractMarkets;
     var contractMarketLister = contractDescription.contractMarketLister;
-    var timestampMarketsCreated = contractDescription.timestampMarketsCreated;
-    var fromBlock = contractDescription.blockNumberCreated;
+    var timestampCreatedMarkets = contractDescription.timestampCreatedMarkets;
+    var fromBlock = contractDescription.blockCreated; //TODO is this the right
 
     options = Object.assign({}, marketSearchOptions, options||{});
 
@@ -243,7 +271,7 @@
     return {
       contractMarkets: contractMarkets,
       contractMarketLister: contractMarketLister,
-      timestampMarketsCreated: timestampMarketsCreated,
+      timestampCreatedMarkets: timestampCreatedMarkets,
       marketIntervalsSorted: filterMarketIntervals, // TODO rename
       expirationDatetimeEnd: expirationDatetimeEnd || constants.expirationDatetimeMax,
       // contains timestamps that are already included
@@ -276,7 +304,7 @@
     expirationDatetimeStart,
     limit // TODO as part of options
   ){
-    expirationDatetimeStart = expirationDatetimeStart || marketSearch.timestampMarketsCreated; // TODO
+    expirationDatetimeStart = expirationDatetimeStart || marketSearch.timestampCreatedMarkets; // TODO
     var contractMarkets = marketSearch.contractMarkets;
     var contractMarketLister = marketSearch.contractMarketLister;
     var marketIntervalsSorted = marketSearch.marketIntervalsSorted;
@@ -397,7 +425,7 @@
   /* search for market creation events until (at least) one of the following points is true:
    *
    * limit is reached (if limit is given)
-   * search is exhausted (expirationDatetimeStart or blockNumberCreated is reached)
+   * search is exhausted (expirationDatetimeStart or blockCreated is reached)
    * TODO
    */
   function getMarketCreateEvents(
@@ -469,9 +497,11 @@
     }
 
     var blockTimestampLatest;
+    var toBlock;
     return web3.eth.getBlock('latest')
       .then(function(blockHeader) {
         blockTimestampLatest = blockHeader.timestamp;
+        toBlock = blockHeader.number;
         return contract.methods.getContractInfo().call();
       })
       .then(function(contractInfo) {
@@ -487,7 +517,7 @@
           contractDescription,
           null, //expirationDatetimeEnd,
           blockTimestampLatest,
-          null, /* toBlock / optional */
+          toBlock,
           options
         );
         return true; // dummy value
