@@ -166,8 +166,8 @@ contract DigiOptionsMarkets is DigiOptionsBaseInterface {
         infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKET_LISTER_IDX)] = 0; // versionMarketLister
         infoValues[uint256(DigiOptionsLib.InfoValues.VERSION_MARKETS_IDX)] = VERSION; // versionMarkets
         infoValues[uint256(DigiOptionsLib.InfoValues.DIGIOPTIONS_MARKETS_ADDR_IDX)] = uint256(uint160(address(this))); // digiOptionsMarketsAddr
-        infoValues[uint256(DigiOptionsLib.InfoValues.BLOCK_NUMBER_CREATED_IDX)] = blockNumber; // blockNumberCreated
-        infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_MARKET_CREATED_IDX)] = timestamp; // timestampMarketsCreated
+        infoValues[uint256(DigiOptionsLib.InfoValues.BLOCK_NUMBER_CREATED_IDX)] = blockNumber; // blockCreated
+        infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_CREATED_MARKETS_IDX)] = timestamp; // timestampCreatedMarkets
         infoValues[uint256(DigiOptionsLib.InfoValues.OFFER_MAX_BLOCKS_INTO_FUTURE_IDX)] = OFFER_MAX_BLOCKS_INTO_FUTURE;
         infoValues[uint256(DigiOptionsLib.InfoValues.ATOMIC_OPTION_PAYOUT_WEI_EXP_IDX)] = ATOMIC_OPTION_PAYOUT_WEI_EXP;
         infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS_IDX)] = existingMarkets;

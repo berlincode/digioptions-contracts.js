@@ -143,7 +143,7 @@ contract DigiOptionsMarketLister is DigiOptionsBaseInterface {
         }
         {
             infoValues[uint256(DigiOptionsLib.InfoValues.BLOCK_NUMBER_CREATED_IDX)] = blockNumber;
-            //infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_MARKET_CREATED_IDX)] // keep timestampMarketsCreated
+            //infoValues[uint256(DigiOptionsLib.InfoValues.TIMESTAMP_CREATED_MARKETS_IDX)] // keep timestampCreatedMarkets
             //infoValues[uint256(DigiOptionsLib.InfoValues.OFFER_MAX_BLOCKS_INTO_FUTURE_IDX)] // keep offerMaxBlocksInto_future
             //infoValues[uint256(DigiOptionsLib.InfoValues.PAYOUT_PER_NANO_OPTION_EXP_IDX)] // keep payoutPerNanoOption
             infoValues[uint256(DigiOptionsLib.InfoValues.EXISTING_MARKETS_IDX)] = existingMarkets;
