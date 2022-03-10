@@ -12,6 +12,8 @@ const optionsDefault = {
   contractsDir: path.join(__dirname, '..', 'contracts'),
   //isOfflineMode: true,
   // see https://solc-bin.ethereum.org/bin/list.json
+  // see https://binaries.soliditylang.org/bin/list.json
+  // fetch binaries from e.g. https://binaries.soliditylang.org/bin/soljson-v0.8.12+commit.f00d7308.js
   //solcVersion: '0.7.4+commit.3f05b770',
   //solcVersion: '0.7.6+commit.7338295f',
   //solcVersion: '0.8.0+commit.c7dfd78e',
@@ -24,12 +26,10 @@ const optionsDefault = {
   //
   //solcVersion: '0.8.7+commit.e28d00a7',
   //solcVersion: '0.8.8+commit.dddeac2f',
-  solcVersion: '0.8.9+commit.e5eed63a',
+  //solcVersion: '0.8.9+commit.e5eed63a',
   //solcVersion: '0.8.10+commit.fc410830',
+  solcVersion: '0.8.12+commit.f00d7308',
   compilerSettings: {
-    //evmVersion: 'byzantium', // for thundercore (as of 2020-05)
-    //remappings: [
-    //],
     optimizer: {
       enabled: true,
       runs: 20000,
