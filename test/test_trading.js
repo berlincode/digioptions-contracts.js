@@ -10,7 +10,7 @@ const factsigner = require('factsigner');
 const digioptionsContracts = require('../js/index.js');
 const TestBase = require('./tools.js').TestBase;
 
-const contractMarketsBytecode = require('../js/digioptions_markets_bin.js')();
+const contractMarketsBytecode = require('../dist/cjs/digioptions_markets_bin.js').default();
 const getActiveUsers = require('../dist/cjs/getActiveUsers.js').getActiveUsers;
 
 //before('initialize variables', function(done) {
