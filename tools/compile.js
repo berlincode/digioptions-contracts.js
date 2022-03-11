@@ -60,35 +60,19 @@ const optionsDefault = {
   ]
 };
 
-function wrap_data_into_module(fname, varname, data){
+function wrap_data_into_module(fname, data){
 
   data = data.replace(/\n/g, '\n  '); // additional indent by 2 spaces
 
   fs.writeFileSync(
     fname,
     `
-(function (global, factory) {
-  if ( typeof define == 'function' && define.amd ) {
-    // AMD
-    define( function () { return factory(); } );
-
-  } else if ( typeof module !== 'undefined' && module.exports ) {
-    // Node and other environments that support module.exports
-    module.exports = factory();
-
-  } else {
-    // Browser
-    global.` + varname + ` = factory();
-  }
-})(this, function(){
-
   /* eslint-disable quotes */
-  var data = ` + data + `;
+  const data = ` + data + `;
   /* eslint-enable quotes */
-  return function(){
+  export default function(){
     return data;
   };
-});
 `,
     'utf8');
 
@@ -108,13 +92,13 @@ function getSizeHex(hexString){
 function generate(filenameJson, baseName){
   const input = JSON.parse(fs.readFileSync(filenameJson));
 
-  const file_bin = path.join(__dirname, '..', 'js', baseName + '_bin.js');
-  const file_abi = path.join(__dirname, '..', 'js', baseName + '_abi.js');
+  const file_bin = path.join(__dirname, '..', 'src', baseName + '_bin.js');
+  const file_abi = path.join(__dirname, '..', 'src', baseName + '_abi.js');
 
   unlink([file_abi, file_bin]);
   // bytecode is wrapped inside quotes so that it is json compatible (and a json-fetch from web app works)
-  wrap_data_into_module(file_bin, baseName + '_bin', '"' + input.compilerOutput.evm.bytecode.object + '"');
-  wrap_data_into_module(file_abi, baseName + '_abi', JSON.stringify(input.compilerOutput.abi, null, 2));
+  wrap_data_into_module(file_bin, '"' + input.compilerOutput.evm.bytecode.object + '"');
+  wrap_data_into_module(file_abi, JSON.stringify(input.compilerOutput.abi, null, 2));
 }
 
 async function compile(optArgs){

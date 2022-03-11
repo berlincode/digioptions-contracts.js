@@ -12,11 +12,12 @@ const digioptionsContracts = require('../js/index.js');
 const TestBase = require('./tools.js').TestBase;
 //const helpers = require('../js/helpers.js');
 
-const contractMarketsBytecode = require('../js/digioptions_markets_bin.js')();
-const contractMarketListerBytecode = require('../js/digioptions_market_lister_bin.js')();
-const contractMetaBytecode = require('../js/digioptions_meta_bin.js')();
 
-const digioptionsMetaAbi = require('../js/digioptions_meta_abi.js')();
+const contractMarketsBytecode = require('../dist/cjs/digioptions_markets_bin.js').default();
+const contractMarketListerBytecode = require('../dist/cjs/digioptions_market_lister_bin.js').default();
+const contractMetaBytecode = require('../dist/cjs/digioptions_meta_bin.js').default();
+
+const digioptionsMetaAbi = require('../dist/cjs/digioptions_meta_abi.js').default();
 
 const epochSecondsStart = 946684800; // Fri, 01 Jan 2000 00:00:00 GMT
 const addrZero = '0x0000000000000000000000000000000000000000';
