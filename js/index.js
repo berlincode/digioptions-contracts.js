@@ -157,29 +157,6 @@
     };
   }
 
-  function getActiveUsers(contract, marketHashes){
-    var filter = {};
-    if (marketHashes){
-      filter = {
-        marketHash: marketHashes
-      };
-    }
-    return contract.getPastEvents('PositionChange', {
-      filter: filter,
-      fromBlock: 0, // TODO
-      toBlock: 'latest'
-    })
-      .then(function(eventsAll){
-        var users = {};
-        for (var idx = 0 ; idx < eventsAll.length; idx++){
-          var returnValues = eventsAll[idx].returnValues;
-          users[web3Utils.padLeft(web3Utils.toHex(returnValues.buyer), 40)] = true;
-          users[web3Utils.padLeft(web3Utils.toHex(returnValues.seller), 40)] = true;
-        }
-        return Object.keys(users);
-      });
-  }
-
   function sortEventsByExpirationDatetime(events){
     // the first element will contain the market with the highest expiration date
     return events.sort(function(evtA, evtB){
@@ -656,7 +633,6 @@
     contractInfoToContractDescription: contractInfoToContractDescription,
     getContractDescription: getContractDescription,
     marketListerInfoToMarketListerDescription: marketListerInfoToMarketListerDescription,
-    getActiveUsers: getActiveUsers,
     sortEventsByExpirationDatetime: sortEventsByExpirationDatetime,
     filterEventsByExpirationDatetime: filterEventsByExpirationDatetime,
     marketSearchSetup: marketSearchSetup,

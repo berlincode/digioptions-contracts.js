@@ -11,6 +11,7 @@ const digioptionsContracts = require('../js/index.js');
 const TestBase = require('./tools.js').TestBase;
 
 const contractMarketsBytecode = require('../js/digioptions_markets_bin.js')();
+const getActiveUsers = require('../dist/cjs/getActiveUsers.js').getActiveUsers;
 
 //before('initialize variables', function(done) {
 //  done();
@@ -598,7 +599,7 @@ describe('simple trading', function() {
     );
     const signature_market_expire = factsigner.signFactsignerMessage(hash, accountSign.privateKey);
 
-    const activeUsers = await digioptionsContracts.getActiveUsers(this.marketsContract, [marketHash]);
+    const activeUsers = await getActiveUsers(this.marketsContract, [marketHash]);
     assert.equal(activeUsers.length, 2);
 
     let txHash;
@@ -792,7 +793,7 @@ describe('complex trading', function() {
       [] // TODO offerHash
     );
 
-    const activeUsers = await digioptionsContracts.getActiveUsers(this.marketsContract, [marketHash]);
+    const activeUsers = await getActiveUsers(this.marketsContract, [marketHash]);
     assert.equal(activeUsers.length, 2);
 
     const winningOptionID = (await this.marketsContract.methods.getMarketDataByMarketHash(addrZero, marketHash).call()).marketState.winningOptionID;
