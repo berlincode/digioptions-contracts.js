@@ -73,10 +73,10 @@
       // so we fetch blockCreated from contractMarkets
       prom = contractMarkets.methods.getContractInfo().call()
         .then(function(contractInfo){
-            blockCreatedMarkets = Number(contractInfo[4]);
-            blockCreatedMarketLister = blockCreated; 
-            return Promise.resolve();
-        })
+          blockCreatedMarkets = Number(contractInfo[4]);
+          blockCreatedMarketLister = blockCreated; 
+          return Promise.resolve();
+        });
     }
 
     return prom
