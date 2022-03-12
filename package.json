@@ -4,7 +4,6 @@
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "MIT",
-  "main": "js/index.js",
   "author": {
     "name": "digioptions.com",
     "url": "https://www.digioptions.com"
@@ -14,7 +13,7 @@
     "clean": "shx rm -rf coverage/*.json coverage/coverage",
     "compile": "./tools/compile.js",
     "ethlint": "solium --dir contracts",
-    "eslint": "eslint *.cjs js/*.js src/ ./test* ./tools",
+    "eslint": "eslint *.cjs src/ ./test* ./tools",
     "coverage": "cd coverage && istanbul report html && open-cli coverage/index.html",
     "profiler": "cd profiler && istanbul report html && open-cli coverage/index.html",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
@@ -23,15 +22,6 @@
   "files": [
     "artifacts/*.json",
     "dist",
-    "js/index.js",
-    "js/constants.js",
-    "js/digioptions_markets_abi.js",
-    "js/digioptions_markets_bin.js",
-    "js/digioptions_market_lister_abi.js",
-    "js/digioptions_market_lister_bin.js",
-    "js/digioptions_meta_abi.js",
-    "js/digioptions_meta_bin.js",
-    "js/helpers.js",
     "contracts/*.sol",
     "patches/*.patch",
     "LICENSE",

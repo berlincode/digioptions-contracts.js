@@ -31,8 +31,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.getContractDescription = exports.contractInfoToContractDescription = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
-const ethLibAccount = __importStar(require("eth-lib/lib/account.js"));
-const constants_js_1 = require("./constants.js");
+const ethLibAccount = __importStar(require("eth-lib/lib/account"));
+const constants_1 = require("./constants");
 const digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
 exports.digioptionsMarketsAbi = digioptions_markets_abi_1.default;
 const digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
@@ -49,14 +49,14 @@ function contractInfoToContractDescription(web3, contractAddr, contractInfo) {
     var atomicOptionPayoutWeiExpBN = web3Utils.toBN(contractInfo[7]);
     var existingMarkets = web3Utils.toBN(contractInfo[8]);
     var contractMarkets = new web3.eth.Contract((0, digioptions_markets_abi_1.default)(), marketsAddr);
-    var contractMarketLister = ((type === constants_js_1.contractType.DIGIOPTIONSMARKETS) ?
+    var contractMarketLister = ((type === constants_1.contractType.DIGIOPTIONSMARKETS) ?
         null
         :
             new web3.eth.Contract((0, digioptions_market_lister_abi_1.default)(), contractAddr));
     var blockCreatedMarkets;
     var blockCreatedMarketLister;
     var prom;
-    if (type === constants_js_1.contractType.DIGIOPTIONSMARKETS) {
+    if (type === constants_1.contractType.DIGIOPTIONSMARKETS) {
         prom = Promise.resolve();
         blockCreatedMarkets = blockCreated;
         blockCreatedMarketLister = null;
@@ -79,7 +79,7 @@ function contractInfoToContractDescription(web3, contractAddr, contractInfo) {
             contractMarkets: contractMarkets,
             contractMarketLister: contractMarketLister,
             contract: contractMarketLister || contractMarkets,
-            versionMarketLister: (type !== constants_js_1.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
+            versionMarketLister: (type !== constants_1.contractType.DIGIOPTIONSMARKETS) && versionFromInt(versionMarketLister),
             // constant values for markets contract
             marketsAddr: marketsAddr,
             versionMarkets: versionFromInt(versionMarkets),
@@ -179,7 +179,7 @@ exports.sortEventsByExpirationDatetime = sortEventsByExpirationDatetime;
 function filterEventsByExpirationDatetime(events, expirationDatetimeStart, expirationDatetimeEnd) {
     // both ends (expirationDatetimeStart and expirationDatetimeEnd) included
     expirationDatetimeStart = expirationDatetimeStart || 0;
-    expirationDatetimeEnd = expirationDatetimeEnd || (constants_js_1.expirationDatetimeMax + 1);
+    expirationDatetimeEnd = expirationDatetimeEnd || (constants_1.expirationDatetimeMax + 1);
     return events.filter(function (evt) { return (evt.returnValues.expirationDatetime >= expirationDatetimeStart) && (evt.returnValues.expirationDatetime <= expirationDatetimeEnd); });
 }
 exports.filterEventsByExpirationDatetime = filterEventsByExpirationDatetime;
@@ -222,13 +222,13 @@ function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether 
     var timestampCreatedMarkets = contractDescription.timestampCreatedMarkets;
     var fromBlock = contractDescription.blockCreated; //TODO is this the right
     options = Object.assign({}, marketSearchOptions, options || {});
-    var filterMarketIntervals = options.filterMarketIntervals || constants_js_1.marketIntervalsAll;
+    var filterMarketIntervals = options.filterMarketIntervals || constants_1.marketIntervalsAll;
     return {
         contractMarkets: contractMarkets,
         contractMarketLister: contractMarketLister,
         timestampCreatedMarkets: timestampCreatedMarkets,
         marketIntervalsSorted: filterMarketIntervals,
-        expirationDatetimeEnd: expirationDatetimeEnd || constants_js_1.expirationDatetimeMax,
+        expirationDatetimeEnd: expirationDatetimeEnd || constants_1.expirationDatetimeMax,
         // contains timestamps that are already included
         filterMarketIntervalsTimestamp: filterMarketIntervals.map(function (marketInterval) {
             // calculate (fake) last values to start with

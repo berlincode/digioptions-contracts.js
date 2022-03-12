@@ -7,7 +7,7 @@ const assert = require('assert');
 
 const factsigner = require('factsigner');
 
-const digioptionsContracts = require('../js/index.js');
+const digioptionsContracts = require('../dist/cjs/index.js');
 const TestBase = require('./tools.js').TestBase;
 
 const contractMarketsBytecode = require('../dist/cjs/digioptions_markets_bin.js').default();

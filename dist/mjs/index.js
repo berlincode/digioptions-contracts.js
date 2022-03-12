@@ -2,8 +2,8 @@
 /* eslint-env es6 */
 import * as web3Utils from 'web3-utils';
 import factsigner from 'factsigner';
-import * as ethLibAccount from 'eth-lib/lib/account.js';
-import { contractType, expirationDatetimeMax, marketIntervalsAll } from './constants.js';
+import * as ethLibAccount from 'eth-lib/lib/account';
+import { contractType, expirationDatetimeMax, marketIntervalsAll } from './constants';
 import digioptionsMarketsAbi from './digioptions_markets_abi';
 import digioptionsMarketListerAbi from './digioptions_market_lister_abi';
 /* returns a promise */

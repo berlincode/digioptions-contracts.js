@@ -15,7 +15,7 @@ const RevertTraceSubprovider = require('@0x/sol-trace').RevertTraceSubprovider;
 const CoverageSubprovider = require('@0x/sol-coverage').CoverageSubprovider;
 const ProfilerSubprovider = require('@0x/sol-profiler').ProfilerSubprovider;
 
-const helpers = require('../js/helpers.js');
+const helpers = require('../dist/cjs/helpers.js');
 
 //const digioptionsContracts = require('../js/index.js');
 
