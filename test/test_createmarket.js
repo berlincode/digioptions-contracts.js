@@ -711,9 +711,9 @@ describe('test createMarket and getMarketDataList', function() {
   });
 
   it('check contract versions and atomicOptionPayoutWeiExpBN', async function() {
-    const contractDescription = await digioptionsContracts.getContractDescription(
+    const contractDescription = await digioptionsContracts.getContractInfo(
       this.web3,
-      this.marketListerContract
+      this.marketListerContract.options.address
     );
 
     const versionMarketLister = contractDescription.versionMarketLister;

@@ -1,7 +1,6 @@
 import digioptionsMarketsAbi from "./digioptions_markets_abi";
 import digioptionsMarketListerAbi from "./digioptions_market_lister_abi";
 export function contractInfoToContractDescription(web3: any, contractAddr: any, contractInfo: any): any;
-export function getContractDescription(web3: any, contract: any): any;
 export function getContractInfo(web3: any, contractAddr: any): any;
 export function marketListerInfoToMarketListerDescription(web3: any, contractListerInfo: any): {
     listerValues: {

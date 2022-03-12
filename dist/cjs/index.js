@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.getContractDescription = exports.contractInfoToContractDescription = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
+exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.contractInfoToContractDescription = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
@@ -96,18 +96,6 @@ function contractInfoToContractDescription(web3, contractAddr, contractInfo) {
     });
 }
 exports.contractInfoToContractDescription = contractInfoToContractDescription;
-/* returns a promise */
-// TODO remove this function
-function getContractDescription(web3, contract) {
-    return contract.methods.getContractInfo().call()
-        .then(function (contractInfo) {
-        if (!contractInfo) {
-            throw new Error('reading contract info/version failed');
-        }
-        return contractInfoToContractDescription(web3, contract.options.address, contractInfo);
-    });
-}
-exports.getContractDescription = getContractDescription;
 /* returns a promise */
 function getContractInfo(web3, contractAddr) {
     // use any contract abi for calling getContractInfo()

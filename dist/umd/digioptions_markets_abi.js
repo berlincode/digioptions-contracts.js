@@ -9,6 +9,7 @@
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
+    // vim: sts=2:ts=2:sw=2
     /* eslint-disable quotes */
     var data = [
         {
@@ -1063,5 +1064,4 @@
         return data;
     }
     exports["default"] = default_1;
-    ;
 });

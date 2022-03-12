@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// vim: sts=2:ts=2:sw=2
 /* eslint-disable quotes */
 const data = [
     {
@@ -693,4 +694,3 @@ function default_1() {
     return data;
 }
 exports.default = default_1;
-;

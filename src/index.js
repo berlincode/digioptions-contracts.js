@@ -85,22 +85,6 @@ function contractInfoToContractDescription(web3, contractAddr, contractInfo){
 }
 
 /* returns a promise */
-    // TODO remove this function
-function getContractDescription(web3, contract){
-  return contract.methods.getContractInfo().call()
-    .then(function(contractInfo) {
-      if (! contractInfo){
-        throw new Error('reading contract info/version failed');
-      }
-      return contractInfoToContractDescription(
-        web3,
-        contract.options.address,
-        contractInfo
-      );
-    });
-}
-
-/* returns a promise */
 function getContractInfo(web3, contractAddr){
   // use any contract abi for calling getContractInfo()
   const contract = new web3.eth.Contract(
@@ -637,7 +621,6 @@ export {
   digioptionsMarketsAbi,
   digioptionsMarketListerAbi,
   contractInfoToContractDescription,
-  getContractDescription,
   getContractInfo,
   marketListerInfoToMarketListerDescription,
   sortEventsByExpirationDatetime,

@@ -1,3 +1,4 @@
+// vim: sts=2:ts=2:sw=2
 /* eslint-disable quotes */
 const data = [
     {
@@ -690,4 +691,3 @@ const data = [
 export default function () {
     return data;
 }
-;

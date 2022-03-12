@@ -62,17 +62,17 @@ const optionsDefault = {
 
 function wrap_data_into_module(fname, data){
 
-  data = data.replace(/\n/g, '\n  '); // additional indent by 2 spaces
+  //data = data.replace(/\n/g, '\n  '); // additional indent by 2 spaces
 
   fs.writeFileSync(
     fname,
-    `
-  /* eslint-disable quotes */
-  const data = ` + data + `;
-  /* eslint-enable quotes */
-  export default function(){
-    return data;
-  };
+    `// vim: sts=2:ts=2:sw=2
+/* eslint-disable quotes */
+const data = ` + data + `;
+/* eslint-enable quotes */
+export default function(){
+  return data;
+}
 `,
     'utf8');
 

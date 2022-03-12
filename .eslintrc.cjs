@@ -1,12 +1,16 @@
 // vim: sts=2:ts=2:sw=2
 module.exports = {
+  'parserOptions': {
+    'ecmaVersion': 2020,
+    'sourceType': 'module'
+  },
   'globals': {
     'define': true
   },
   'env': {
-    'browser': true,
     'commonjs': true,
-    'node': true
+    'node': true,
+    'es6': true
   },
   'extends': 'eslint:recommended',
   'rules': {
