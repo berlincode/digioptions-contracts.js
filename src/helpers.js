@@ -20,10 +20,10 @@ function roundUpWeek(epochSeconds){
 }
 
 function roundUpMonth(epochSeconds){
-  var date = new Date(0); // The 0 is the key, which sets the date to the epoch
+  const date = new Date(0); // The 0 is the key, which sets the date to the epoch
   date.setUTCSeconds(epochSeconds);
 
-  var current;
+  let current;
   if (date.getMonth() == 11) {
     current = new Date(Date.UTC(date.getFullYear() + 1, 0, 1,0 ,0, 0));
   } else {
@@ -37,23 +37,23 @@ function MarketsPossibleToCreate() {
 }
 
 MarketsPossibleToCreate.prototype.get = function(dateNow, markets) {
-  //var self = this;
+  //const self = this;
 
-  var validMarkets = [];
-  for (var idx=0 ; idx < markets.length ; idx++){
-    var marketBaseData = markets[idx];
-    var marketHash = digioptionsContracts.marketHash(marketBaseData);
+  const validMarkets = [];
+  for (let idx=0 ; idx < markets.length ; idx++){
+    const marketBaseData = markets[idx];
+    const marketHash = digioptionsContracts.marketHash(marketBaseData);
     if (this.existingMarkets[marketHash]){
       continue;
     }
     this.existingMarkets[marketHash] = true;
 
     if (marketBaseData.config & factsigner.constants.configIntervalTypeIsUsedMask) {
-      var marketInterval = marketBaseData.marketInterval;
-      var expirationDatetime = marketBaseData.expirationDatetime;
+      const marketInterval = marketBaseData.marketInterval;
+      const expirationDatetime = marketBaseData.expirationDatetime;
 
       // TODO duplicate
-      var maxFuture = [ // TODO rename into step... or segmentSizeSeconds ...
+      const maxFuture = [ // TODO rename into step... or segmentSizeSeconds ...
         0, // marketInterval.NONE // TODO how to handle?
         730 * 24 * 60 * 60,
         190 * 24 * 60 * 60, // YEARLY // TODO 190
@@ -90,12 +90,12 @@ function GasStatistics(web3) {
   this.etherPriceInMilliDollar = web3Utils.toBN('180000');
 }
 GasStatistics.prototype.add = function(txHash, statKey){
-  var self = this;
+  const self = this;
   return self.web3.eth.getTransactionReceipt(txHash)
     .then(function(txDetails){
-      var gasUsedBn = web3Utils.toBN(txDetails.gasUsed);
-      var eth = web3Utils.toBN(web3Utils.toWei('1', 'ether'));
-      var us_dollar_approx = (gasUsedBn.mul(self.gasPrice).mul(self.etherPriceInMilliDollar).div(eth).toNumber()/1000.0).toFixed(3);
+      const gasUsedBn = web3Utils.toBN(txDetails.gasUsed);
+      const eth = web3Utils.toBN(web3Utils.toWei('1', 'ether'));
+      const us_dollar_approx = (gasUsedBn.mul(self.gasPrice).mul(self.etherPriceInMilliDollar).div(eth).toNumber()/1000.0).toFixed(3);
       if (! self.statistics[statKey])
         self.statistics[statKey] = [];
 
@@ -107,12 +107,12 @@ GasStatistics.prototype.add = function(txHash, statKey){
 };
 GasStatistics.prototype.getJsonString = function(){
   function orderedStringify(obj, spaces) {
-    var allKeys = [];
-    JSON.stringify(obj, function(k, v){ allKeys.push(k); return v;}, spaces);
+    const allKeys = [];
+    JSON.stringify(obj, function(k, v){allKeys.push(k); return v;}, spaces);
     return JSON.stringify(obj, allKeys.sort(), spaces);
   }
 
-  //var keys = Object.keys(this.statistics).sort();
+  //const keys = Object.keys(this.statistics).sort();
   //for (let key of keys){
   //  for (let entry of this.statistics[key]){
   //    console.log(`${key.padEnd(40)} - gasUsed: ${entry.gasUsed.padStart(8)}  ~USD: ${entry.usd.padStart(6)}`);

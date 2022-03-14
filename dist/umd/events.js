@@ -84,6 +84,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, _a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.numConcurrency, numConcurrency = _c === void 0 ? numConcurrencyDefault : _c, _d = _b.maximumBlockRange, maximumBlockRange = _d === void 0 ? maximumBlockRangeDefault : _d, _e = _b.progressCallback, progressCallback = _e === void 0 ? null : _e, /* returns a value between 0 and 1 */ _f = _b.blockIterator, /* returns a value between 0 and 1 */ blockIterator = _f === void 0 ? blockIteratorReverse : _f;
         return __awaiter(this, void 0, void 0, function () {
+            //for (let [eventName, _filter] of eventNameAndFilterList) {
+            //  console.log('getPastEvents', eventName, fromBlock, toBlock);
+            //}
             function worker() {
                 return __awaiter(this, void 0, void 0, function () {
                     var _i, iterator_1, blockRange, iteratorIdxCurrent, eventsNew, _a, eventNameAndFilterList_1, _b, eventName, filter, _c, _d, err_1;

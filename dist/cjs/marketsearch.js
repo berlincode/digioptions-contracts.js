@@ -70,12 +70,12 @@ const marketSearchOptions = {
     filterMarketIntervals: null
 };
 function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
-    var contractMarkets = contractDescription.contractMarkets;
-    var contractMarketLister = contractDescription.contractMarketLister;
-    var timestampCreatedMarkets = contractDescription.timestampCreatedMarkets;
-    var fromBlock = contractDescription.blockCreated; //TODO is this the right
+    const contractMarkets = contractDescription.contractMarkets;
+    const contractMarketLister = contractDescription.contractMarketLister;
+    const timestampCreatedMarkets = contractDescription.timestampCreatedMarkets;
+    const fromBlock = contractDescription.blockCreated; //TODO is this the right
     options = Object.assign({}, marketSearchOptions, options || {});
-    var filterMarketIntervals = options.filterMarketIntervals || constants_js_1.marketIntervalsAll;
+    const filterMarketIntervals = options.filterMarketIntervals || constants_js_1.marketIntervalsAll;
     return {
         contractMarkets: contractMarkets,
         contractMarketLister: contractMarketLister,
@@ -85,7 +85,7 @@ function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether 
         // contains timestamps that are already included
         filterMarketIntervalsTimestamp: filterMarketIntervals.map(function (marketInterval) {
             // calculate (fake) last values to start with
-            var divider = dividers[marketInterval];
+            const divider = dividers[marketInterval];
             if (expirationDatetimeEnd) {
                 return (Math.floor(expirationDatetimeEnd / divider) + 1) * divider;
             }
@@ -107,20 +107,20 @@ exports.marketSearchSetup = marketSearchSetup;
 function getMarketCreateEventsIntern(contractDescription, marketSearch, expirationDatetimeStart, limit // TODO as part of options
 ) {
     expirationDatetimeStart = expirationDatetimeStart || marketSearch.timestampCreatedMarkets; // TODO
-    var contractMarkets = marketSearch.contractMarkets;
-    var contractMarketLister = marketSearch.contractMarketLister;
-    var marketIntervalsSorted = marketSearch.marketIntervalsSorted;
-    var filterMarketIntervalsTimestamp = marketSearch.filterMarketIntervalsTimestamp.slice(); // make a copy // TODO copy neccessary
-    var expirationDatetimeEnd = marketSearch.expirationDatetimeEnd;
-    var fromBlock = marketSearch.fromBlock;
-    var toBlock = marketSearch.toBlock;
-    var filtersMax = marketSearch.filtersMax;
-    var expirationDatetimeFilterList = [];
-    var maxValue, maxIndex;
+    const contractMarkets = marketSearch.contractMarkets;
+    const contractMarketLister = marketSearch.contractMarketLister;
+    const marketIntervalsSorted = marketSearch.marketIntervalsSorted;
+    const filterMarketIntervalsTimestamp = marketSearch.filterMarketIntervalsTimestamp.slice(); // make a copy // TODO copy neccessary
+    const expirationDatetimeEnd = marketSearch.expirationDatetimeEnd;
+    const fromBlock = marketSearch.fromBlock;
+    const toBlock = marketSearch.toBlock;
+    const filtersMax = marketSearch.filtersMax;
+    const expirationDatetimeFilterList = [];
+    let maxValue, maxIndex;
     while (expirationDatetimeFilterList.length < filtersMax) {
         maxValue = filterMarketIntervalsTimestamp[0];
         maxIndex = 0;
-        for (var i = 1; i < filterMarketIntervalsTimestamp.length; i++) {
+        for (let i = 1; i < filterMarketIntervalsTimestamp.length; i++) {
             if (filterMarketIntervalsTimestamp[i] > maxValue) {
                 maxIndex = i;
                 maxValue = filterMarketIntervalsTimestamp[i];
@@ -129,9 +129,9 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
         if (maxValue < expirationDatetimeStart) {
             break;
         }
-        var marketInterval = marketIntervalsSorted[maxIndex];
-        var divider = dividers[marketInterval];
-        var x = Math.floor(filterMarketIntervalsTimestamp[maxIndex] / divider) - 1; // TODO rename / remove floor
+        const marketInterval = marketIntervalsSorted[maxIndex];
+        const divider = dividers[marketInterval];
+        const x = Math.floor(filterMarketIntervalsTimestamp[maxIndex] / divider) - 1; // TODO rename / remove floor
         if (x >= 0) // TODO remove / should not be negative
             expirationDatetimeFilterList.push((x << 8) + marketInterval); // TODO switch
         filterMarketIntervalsTimestamp[maxIndex] = x * divider;
@@ -140,8 +140,8 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
     if ((limit && (marketSearch.eventsRemainingReady.length >= limit)) ||
         (expirationDatetimeFilterList.length == 0)) {
         //console.log('return from cache');
-        var events = marketSearch.eventsRemainingReady.slice(0, limit);
-        var eventsRemainingReady = marketSearch.eventsRemainingReady.slice(limit);
+        const events = marketSearch.eventsRemainingReady.slice(0, limit);
+        const eventsRemainingReady = marketSearch.eventsRemainingReady.slice(limit);
         return Promise.resolve([
             events,
             // return updated marketSearch
@@ -151,11 +151,11 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
             }),
         ]);
     }
-    var eventName = contractMarketLister ? 'MarketCreateLister' : 'MarketCreate';
-    var contract = contractMarketLister || contractMarkets;
+    const eventName = contractMarketLister ? 'MarketCreateLister' : 'MarketCreate';
+    const contract = contractMarketLister || contractMarkets;
     //console.log('expirationDatetimeFilterList:', expirationDatetimeFilterList.map(function(filterValue){return '0x'+filterValue.toString(16);}).join(',\n'));
     //console.log('expirationDatetimeFilterList.length:', expirationDatetimeFilterList.length);
-    var filter = {
+    const filter = {
         expirationDatetimeFilter: expirationDatetimeFilterList
     };
     if (marketSearch.filterMarketCategories)
@@ -169,16 +169,16 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
         ]
     ])
         .then(function (eventsNew) {
-        var eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
+        const eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
         expirationDatetimeEnd //expirationDatetimeEnd
         ));
         // TODO we can only return values where we are sure that they are in order
-        var timestamp = Math.max.apply(null, filterMarketIntervalsTimestamp);
-        var eventsRemainingReady = [];
-        var eventsRemaining = [];
-        var events = [];
-        for (var idx = 0; idx < eventsSorted.length; idx++) {
-            var evt = eventsSorted[idx];
+        const timestamp = Math.max.apply(null, filterMarketIntervalsTimestamp);
+        let eventsRemainingReady = [];
+        let eventsRemaining = [];
+        let events = [];
+        for (let idx = 0; idx < eventsSorted.length; idx++) {
+            const evt = eventsSorted[idx];
             if (evt.returnValues.expirationDatetime < timestamp) {
                 // TODO we can only return values where we are sure that they are in order
                 eventsRemaining.push(evt);
@@ -214,11 +214,11 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
  */
 function getMarketCreateEvents(contractDescription, marketSearch, expirationDatetimeStart, limit // TODO as part of options
 ) {
-    var eventsAll = [];
+    let eventsAll = [];
     function loop() {
         return getMarketCreateEventsIntern(contractDescription, marketSearch, expirationDatetimeStart, limit)
             .then(function (results) {
-            var events = results[0];
+            const events = results[0];
             marketSearch = results[1];
             eventsAll = eventsAll.concat(events);
             if (marketSearch.exhausted || (eventsAll.length > 0)) {

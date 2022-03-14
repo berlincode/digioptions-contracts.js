@@ -55,6 +55,10 @@ async function getPastEvents(
 
   const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
 
+  //for (let [eventName, _filter] of eventNameAndFilterList) {
+  //  console.log('getPastEvents', eventName, fromBlock, toBlock);
+  //}
+
   async function worker() {
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;

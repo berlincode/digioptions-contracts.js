@@ -73,7 +73,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     }
     exports.MarketsPossibleToCreate = MarketsPossibleToCreate;
     MarketsPossibleToCreate.prototype.get = function (dateNow, markets) {
-        //var self = this;
+        //const self = this;
         var validMarkets = [];
         for (var idx = 0; idx < markets.length; idx++) {
             var marketBaseData = markets[idx];
@@ -142,7 +142,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             JSON.stringify(obj, function (k, v) { allKeys.push(k); return v; }, spaces);
             return JSON.stringify(obj, allKeys.sort(), spaces);
         }
-        //var keys = Object.keys(this.statistics).sort();
+        //const keys = Object.keys(this.statistics).sort();
         //for (let key of keys){
         //  for (let entry of this.statistics[key]){
         //    console.log(`${key.padEnd(40)} - gasUsed: ${entry.gasUsed.padStart(8)}  ~USD: ${entry.usd.padStart(6)}`);

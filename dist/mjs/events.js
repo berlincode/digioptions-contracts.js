@@ -33,6 +33,9 @@ async function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterLis
     let iterationsFinished = 0; // for progress calculation
     let error = null;
     const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
+    //for (let [eventName, _filter] of eventNameAndFilterList) {
+    //  console.log('getPastEvents', eventName, fromBlock, toBlock);
+    //}
     async function worker() {
         for (let blockRange of iterator) {
             const iteratorIdxCurrent = iteratorIdx++;

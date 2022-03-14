@@ -28,7 +28,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getActiveUsers = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 function getActiveUsers(contract, marketHashes) {
-    var filter = {};
+    let filter = {};
     if (marketHashes) {
         filter = {
             marketHash: marketHashes
@@ -40,9 +40,9 @@ function getActiveUsers(contract, marketHashes) {
         toBlock: 'latest'
     })
         .then(function (eventsAll) {
-        var users = {};
-        for (var idx = 0; idx < eventsAll.length; idx++) {
-            var returnValues = eventsAll[idx].returnValues;
+        const users = {};
+        for (let idx = 0; idx < eventsAll.length; idx++) {
+            const returnValues = eventsAll[idx].returnValues;
             users[web3Utils.padLeft(web3Utils.toHex(returnValues.buyer), 40)] = true;
             users[web3Utils.padLeft(web3Utils.toHex(returnValues.seller), 40)] = true;
         }
