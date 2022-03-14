@@ -35,6 +35,7 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
 /* getPastEvents:
  *    similar to contract.getPastEvents() but iterates over a given block
  *    range in small chunks that are not larger that maximumBlockRange
+ *    returns an array of array of events
  */
 async function getPastEvents(
   contract,
@@ -48,7 +49,7 @@ async function getPastEvents(
     blockIterator = blockIteratorReverse,
   } = {}
 ){
-  let eventLists = [];
+  let eventLists = new Array(eventNameAndFilterList.length).fill([]); 
   let iteratorIdx = 0; // fill eventLists in-order
   let iterationsFinished = 0; // for progress calculation
   let error = null;
@@ -62,30 +63,30 @@ async function getPastEvents(
   async function worker() {
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
-      let eventsNew = [];
+      // create and empty array for each eventNameAndFilter
+      let eventsNew = new Array(eventNameAndFilterList.length).fill([]); 
 
-      for (let [eventName, filter] of eventNameAndFilterList) {
+      for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
+        const [eventName, filter] = eventNameAndFilter;
         if (error){
           // if any worker has has an error we stop this one too
           return;
         }
         try {
-          eventsNew = eventsNew.concat(
-            await contract.getPastEvents(
-              eventName,
-              {
-                filter: filter,
-                fromBlock: blockRange.fromBlock,
-                toBlock: blockRange.toBlock
-              }
-            )
+          eventsNew[idx] = await contract.getPastEvents(
+            eventName,
+            {
+              filter: filter,
+              fromBlock: blockRange.fromBlock,
+              toBlock: blockRange.toBlock
+            }
           );
         } catch (err) {
           error = err;
           throw new Error(error);
         }
+        eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
       }
-      eventLists[iteratorIdxCurrent] = eventsNew;
 
       /* update progress */
       iterationsFinished++;
@@ -105,8 +106,8 @@ async function getPastEvents(
     throw new Error(error);
   }
 
-  // join all lists
-  return [].concat.apply([], eventLists);
+  // join all list of events for each eventNameAndFilter
+  return eventLists.map(function(x){return [].concat.apply([], x);});
 }
 
 export {

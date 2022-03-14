@@ -4,6 +4,7 @@ import * as web3Utils from 'web3-utils';
 import factsigner from 'factsigner';
 import * as ethLibAccount from 'eth-lib/lib/account';
 import { contractType, expirationDatetimeMax, marketIntervalsAll } from './constants';
+import { getPastEvents } from './events.js';
 import digioptionsMarketsAbi from './digioptions_markets_abi';
 import digioptionsMarketListerAbi from './digioptions_market_lister_abi';
 /* returns a promise */
@@ -165,7 +166,6 @@ const marketSearchOptions = {
     filtersMax: 100,
     marketInterval: null,
     filterMarketCategories: null,
-    //filterMarketCategories: [factsigner.constants.marketCategory.FINANCE],
     filterMarketIntervals: null
 };
 function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
@@ -258,12 +258,16 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
     };
     if (marketSearch.filterMarketCategories)
         filter.marketCategory = marketSearch.filterMarketCategories;
-    return contract.getPastEvents(eventName, {
-        filter: filter,
-        fromBlock: fromBlock,
-        toBlock: toBlock
-    })
-        .then(function (eventsNew) {
+    return getPastEvents(contract, fromBlock, // fromBlock
+    toBlock, // toBlock
+    [
+        [
+            eventName,
+            filter
+        ]
+    ])
+        .then(function (eventsNewList) {
+        const eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
         const eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
         expirationDatetimeEnd //expirationDatetimeEnd
         ));

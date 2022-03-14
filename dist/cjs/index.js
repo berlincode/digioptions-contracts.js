@@ -33,6 +33,7 @@ const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
 const constants_1 = require("./constants");
+const events_js_1 = require("./events.js");
 const digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
 exports.digioptionsMarketsAbi = digioptions_markets_abi_1.default;
 const digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
@@ -201,7 +202,6 @@ const marketSearchOptions = {
     filtersMax: 100,
     marketInterval: null,
     filterMarketCategories: null,
-    //filterMarketCategories: [factsigner.constants.marketCategory.FINANCE],
     filterMarketIntervals: null
 };
 function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
@@ -295,12 +295,16 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
     };
     if (marketSearch.filterMarketCategories)
         filter.marketCategory = marketSearch.filterMarketCategories;
-    return contract.getPastEvents(eventName, {
-        filter: filter,
-        fromBlock: fromBlock,
-        toBlock: toBlock
-    })
-        .then(function (eventsNew) {
+    return (0, events_js_1.getPastEvents)(contract, fromBlock, // fromBlock
+    toBlock, // toBlock
+    [
+        [
+            eventName,
+            filter
+        ]
+    ])
+        .then(function (eventsNewList) {
+        const eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
         const eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
         expirationDatetimeEnd //expirationDatetimeEnd
         ));

@@ -80,6 +80,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     /* getPastEvents:
      *    similar to contract.getPastEvents() but iterates over a given block
      *    range in small chunks that are not larger that maximumBlockRange
+     *    returns an array of array of events
      */
     function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, _a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.numConcurrency, numConcurrency = _c === void 0 ? numConcurrencyDefault : _c, _d = _b.maximumBlockRange, maximumBlockRange = _d === void 0 ? maximumBlockRangeDefault : _d, _e = _b.progressCallback, progressCallback = _e === void 0 ? null : _e, /* returns a value between 0 and 1 */ _f = _b.blockIterator, /* returns a value between 0 and 1 */ blockIterator = _f === void 0 ? blockIteratorReverse : _f;
@@ -89,58 +90,62 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             //}
             function worker() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var _i, iterator_1, blockRange, iteratorIdxCurrent, eventsNew, _a, eventNameAndFilterList_1, _b, eventName, filter, _c, _d, err_1;
-                    return __generator(this, function (_e) {
-                        switch (_e.label) {
+                    var _i, iterator_1, blockRange, iteratorIdxCurrent, eventsNew, _a, _b, _c, idx, eventNameAndFilter, eventName, filter, _d, _e, err_1;
+                    return __generator(this, function (_f) {
+                        switch (_f.label) {
                             case 0:
                                 _i = 0, iterator_1 = iterator;
-                                _e.label = 1;
+                                _f.label = 1;
                             case 1:
-                                if (!(_i < iterator_1.length)) return [3 /*break*/, 9];
+                                if (!(_i < iterator_1.length)) return [3 /*break*/, 10];
                                 blockRange = iterator_1[_i];
                                 iteratorIdxCurrent = iteratorIdx++;
-                                eventsNew = [];
-                                _a = 0, eventNameAndFilterList_1 = eventNameAndFilterList;
-                                _e.label = 2;
+                                eventsNew = new Array(eventNameAndFilterList.length).fill([]);
+                                _a = 0, _b = eventNameAndFilterList.entries();
+                                _f.label = 2;
                             case 2:
-                                if (!(_a < eventNameAndFilterList_1.length)) return [3 /*break*/, 7];
-                                _b = eventNameAndFilterList_1[_a], eventName = _b[0], filter = _b[1];
+                                if (!(_a < _b.length)) return [3 /*break*/, 8];
+                                _c = _b[_a], idx = _c[0], eventNameAndFilter = _c[1];
+                                eventName = eventNameAndFilter[0], filter = eventNameAndFilter[1];
                                 if (error) {
                                     // if any worker has has an error we stop this one too
                                     return [2 /*return*/];
                                 }
-                                _e.label = 3;
+                                _f.label = 3;
                             case 3:
-                                _e.trys.push([3, 5, , 6]);
-                                _d = (_c = eventsNew).concat;
+                                _f.trys.push([3, 5, , 6]);
+                                _d = eventsNew;
+                                _e = idx;
                                 return [4 /*yield*/, contract.getPastEvents(eventName, {
                                         filter: filter,
                                         fromBlock: blockRange.fromBlock,
                                         toBlock: blockRange.toBlock
                                     })];
                             case 4:
-                                eventsNew = _d.apply(_c, [_e.sent()]);
+                                _d[_e] = _f.sent();
                                 return [3 /*break*/, 6];
                             case 5:
-                                err_1 = _e.sent();
+                                err_1 = _f.sent();
                                 error = err_1;
                                 throw new Error(error);
                             case 6:
+                                eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
+                                _f.label = 7;
+                            case 7:
                                 _a++;
                                 return [3 /*break*/, 2];
-                            case 7:
-                                eventLists[iteratorIdxCurrent] = eventsNew;
+                            case 8:
                                 /* update progress */
                                 iterationsFinished++;
                                 if (progressCallback) {
                                     // call progressCallback after each blockRange
                                     progressCallback(iterationsFinished / iterator.iterations(), eventsNew); // events might not be in order
                                 }
-                                _e.label = 8;
-                            case 8:
+                                _f.label = 9;
+                            case 9:
                                 _i++;
                                 return [3 /*break*/, 1];
-                            case 9: return [2 /*return*/];
+                            case 10: return [2 /*return*/];
                         }
                     });
                 });
@@ -149,7 +154,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return __generator(this, function (_g) {
                 switch (_g.label) {
                     case 0:
-                        eventLists = [];
+                        eventLists = new Array(eventNameAndFilterList.length).fill([]);
                         iteratorIdx = 0;
                         iterationsFinished = 0;
                         error = null;
@@ -161,8 +166,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         if (error) {
                             throw new Error(error);
                         }
-                        // join all lists
-                        return [2 /*return*/, [].concat.apply([], eventLists)];
+                        // join all list of events for each eventNameAndFilter
+                        return [2 /*return*/, eventLists.map(function (x) { return [].concat.apply([], x); })];
                 }
             });
         });

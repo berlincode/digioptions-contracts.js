@@ -16,4 +16,4 @@ export function getPastEvents(contract: any, fromBlock: any, toBlock: any, event
     maximumBlockRange?: number | undefined;
     progressCallback?: null | undefined;
     blockIterator?: typeof blockIteratorReverse | undefined;
-}): Promise<never[]>;
+}): Promise<never[][]>;

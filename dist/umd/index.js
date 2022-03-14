@@ -32,7 +32,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
+        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./events.js", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -42,6 +42,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
     var constants_1 = require("./constants");
+    var events_js_1 = require("./events.js");
     var digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
     exports.digioptionsMarketsAbi = digioptions_markets_abi_1["default"];
     var digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
@@ -210,7 +211,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         filtersMax: 100,
         marketInterval: null,
         filterMarketCategories: null,
-        //filterMarketCategories: [factsigner.constants.marketCategory.FINANCE],
         filterMarketIntervals: null
     };
     function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
@@ -304,12 +304,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         if (marketSearch.filterMarketCategories)
             filter.marketCategory = marketSearch.filterMarketCategories;
-        return contract.getPastEvents(eventName, {
-            filter: filter,
-            fromBlock: fromBlock,
-            toBlock: toBlock
-        })
-            .then(function (eventsNew) {
+        return (0, events_js_1.getPastEvents)(contract, fromBlock, // fromBlock
+        toBlock, // toBlock
+        [
+            [
+                eventName,
+                filter
+            ]
+        ])
+            .then(function (eventsNewList) {
+            var eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
             var eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
             expirationDatetimeEnd //expirationDatetimeEnd
             ));
