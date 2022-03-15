@@ -11,9 +11,10 @@ export function blockIteratorReverse(fromBlock: any, toBlock: any, maximumBlockR
     iterations: () => number;
     [Symbol.iterator]: () => any;
 };
-export function getPastEvents(contract: any, fromBlock: any, toBlock: any, eventNameAndFilterList: any, { numConcurrency, maximumBlockRange, progressCallback, blockIterator, }?: {
+export function getPastEvents(contract: any, fromBlock: any, toBlock: any, eventNameAndFilterList: any, { numConcurrency, maximumBlockRange, progressCallback, blockIterator, progressCallbackDebounce, }?: {
     numConcurrency?: number | undefined;
     maximumBlockRange?: number | undefined;
     progressCallback?: null | undefined;
     blockIterator?: typeof blockIteratorReverse | undefined;
+    progressCallbackDebounce?: number | undefined;
 }): Promise<never[][]>;

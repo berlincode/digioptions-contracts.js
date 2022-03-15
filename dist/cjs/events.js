@@ -43,12 +43,14 @@ exports.blockIteratorReverse = blockIteratorReverse;
  *    range in small chunks that are not larger that maximumBlockRange
  *    returns an array of array of events
  */
-function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { numConcurrency = numConcurrencyDefault, maximumBlockRange = maximumBlockRangeDefault, progressCallback = null, /* returns a value between 0 and 1 */ blockIterator = blockIteratorReverse, } = {}) {
+function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { numConcurrency = numConcurrencyDefault, maximumBlockRange = maximumBlockRangeDefault, progressCallback = null, /* returns a value between 0 and 1 */ blockIterator = blockIteratorReverse, progressCallbackDebounce = 350, // in milliseconds
+ } = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         let eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => []);
         let iteratorIdx = 0; // fill eventLists in-order
         let iterationsFinished = 0; // for progress calculation
         let error = null;
+        let nextCallAllowed = 0;
         const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
         //for (let [eventName, _filter] of eventNameAndFilterList) {
         //  console.log('getPastEvents', eventName, fromBlock, toBlock);
@@ -81,8 +83,12 @@ function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { n
                     /* update progress */
                     iterationsFinished++;
                     if (progressCallback) {
-                        // call progressCallback after each blockRange
-                        progressCallback(iterationsFinished / iterator.iterations(), eventsNew); // events might not be in order
+                        // call progressCallback ?
+                        const now = Date.now();
+                        if (now > nextCallAllowed) {
+                            nextCallAllowed = now + progressCallbackDebounce;
+                            progressCallback(iterationsFinished / iterator.iterations(), eventsNew); // events might not be in order
+                        }
                     }
                 }
             });

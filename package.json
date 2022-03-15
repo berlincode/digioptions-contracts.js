@@ -16,6 +16,7 @@
     "eslint": "eslint *.cjs src/ ./test* ./tools",
     "coverage": "cd coverage && istanbul report html && open-cli coverage/index.html",
     "profiler": "cd profiler && istanbul report html && open-cli coverage/index.html",
+    "watch-mjs": "tsc -p tsconfig-mjs.json --watch",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
     "postinstall": "patch-package"
   },
