@@ -29,7 +29,7 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
  *    returns an array of array of events
  */
 async function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { numConcurrency = numConcurrencyDefault, maximumBlockRange = maximumBlockRangeDefault, progressCallback = null, /* returns a value between 0 and 1 */ blockIterator = blockIteratorReverse, } = {}) {
-    let eventLists = new Array(eventNameAndFilterList.length).fill([]);
+    let eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => []);
     let iteratorIdx = 0; // fill eventLists in-order
     let iterationsFinished = 0; // for progress calculation
     let error = null;
@@ -40,8 +40,8 @@ async function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterLis
     async function worker() {
         for (let blockRange of iterator) {
             const iteratorIdxCurrent = iteratorIdx++;
-            // create and empty array for each eventNameAndFilter
-            let eventsNew = new Array(eventNameAndFilterList.length).fill([]);
+            // create an empty array for each eventNameAndFilter
+            let eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(() => []);
             for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
                 const [eventName, filter] = eventNameAndFilter;
                 if (error) {

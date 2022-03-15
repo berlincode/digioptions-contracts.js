@@ -130,6 +130,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                 throw new Error(error);
                             case 6:
                                 eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
+                                if (eventName === 'PositionChange') {
+                                    console.log('xx', idx, eventName, filter, eventsNew[idx].length);
+                                }
                                 _f.label = 7;
                             case 7:
                                 _a++;

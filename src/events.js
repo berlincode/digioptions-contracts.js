@@ -49,7 +49,7 @@ async function getPastEvents(
     blockIterator = blockIteratorReverse,
   } = {}
 ){
-  let eventLists = new Array(eventNameAndFilterList.length).fill([]); 
+  let eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
   let iteratorIdx = 0; // fill eventLists in-order
   let iterationsFinished = 0; // for progress calculation
   let error = null;
@@ -63,8 +63,8 @@ async function getPastEvents(
   async function worker() {
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
-      // create and empty array for each eventNameAndFilter
-      let eventsNew = new Array(eventNameAndFilterList.length).fill([]); 
+      // create an empty array for each eventNameAndFilter
+      let eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
 
       for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
         const [eventName, filter] = eventNameAndFilter;

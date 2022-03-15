@@ -57,7 +57,7 @@ function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { n
             return __awaiter(this, void 0, void 0, function* () {
                 for (let blockRange of iterator) {
                     const iteratorIdxCurrent = iteratorIdx++;
-                    // create and empty array for each eventNameAndFilter
+                    // create an empty array for each eventNameAndFilter
                     let eventsNew = new Array(eventNameAndFilterList.length).fill([]);
                     for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
                         const [eventName, filter] = eventNameAndFilter;
@@ -77,6 +77,9 @@ function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { n
                             throw new Error(error);
                         }
                         eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
+                        if (eventName === 'PositionChange') {
+                            console.log('xx', idx, eventName, filter, eventsNew[idx].length);
+                        }
                     }
                     /* update progress */
                     iterationsFinished++;
