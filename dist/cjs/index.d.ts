@@ -1,6 +1,5 @@
 import digioptionsMarketsAbi from "./digioptions_markets_abi";
 import digioptionsMarketListerAbi from "./digioptions_market_lister_abi";
-export function contractInfoToContractDescription(web3: any, contractAddr: any, contractInfo: any): any;
 export function getContractInfo(web3: any, contractAddr: any): any;
 export function marketListerInfoToMarketListerDescription(web3: any, contractListerInfo: any): {
     listerValues: {
@@ -16,14 +15,14 @@ export function marketListerInfoToMarketListerDescription(web3: any, contractLis
 };
 export function sortEventsByExpirationDatetime(events: any): any;
 export function filterEventsByExpirationDatetime(events: any, expirationDatetimeStart: any, expirationDatetimeEnd: any): any;
-export function marketSearchSetup(contractDescription: any, expirationDatetimeEnd: any, blockTimestampLatest: any, toBlock: any, options: any): {
-    contractMarkets: any;
-    contractMarketLister: any;
+export function marketSearchSetup(contractInfo: any, expirationDatetimeEnd: any, blockTimestampLatest: any, toBlock: any, options: any): {
+    contract: any;
+    eventName: string;
+    fromBlock: any;
     timestampCreatedMarkets: any;
     marketIntervalsSorted: any;
     expirationDatetimeEnd: any;
     filterMarketIntervalsTimestamp: any;
-    fromBlock: any;
     toBlock: any;
     filterFunc: any;
     filtersMax: any;
@@ -33,7 +32,7 @@ export function marketSearchSetup(contractDescription: any, expirationDatetimeEn
     eventsRemaining: never[];
     exhausted: boolean;
 };
-export function getMarketCreateEvents(contractDescription: any, marketSearch: any, expirationDatetimeStart: any, limit: any): any;
+export function getMarketCreateEvents(marketSearch: any, expirationDatetimeStart: any, limit: any): any;
 export function getMarketDataList(web3: any, contractAddr: any, userAddr: any, expirationDatetime: any, options: any): any;
 export function marketHash(marketBaseData: any): string | null;
 export function orderOfferToHash(order: any): string | null;

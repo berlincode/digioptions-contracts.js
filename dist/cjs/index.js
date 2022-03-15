@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.contractInfoToContractDescription = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
+exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
@@ -39,7 +39,7 @@ exports.digioptionsMarketsAbi = digioptions_markets_abi_1.default;
 const digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
 exports.digioptionsMarketListerAbi = digioptions_market_lister_abi_1.default;
 /* returns a promise */
-function contractInfoToContractDescription(web3, contractAddr, contractInfo) {
+function parseContractInfo(web3, contractAddr, contractInfo) {
     const type = Number(contractInfo[0]);
     const versionMarketLister = contractInfo[1];
     const versionMarkets = contractInfo[2];
@@ -96,7 +96,6 @@ function contractInfoToContractDescription(web3, contractAddr, contractInfo) {
         };
     });
 }
-exports.contractInfoToContractDescription = contractInfoToContractDescription;
 /* returns a promise */
 function getContractInfo(web3, contractAddr) {
     // use any contract abi for calling getContractInfo()
@@ -106,7 +105,7 @@ function getContractInfo(web3, contractAddr) {
         if (!contractInfo) {
             throw new Error('reading contract info/version failed');
         }
-        return contractInfoToContractDescription(web3, contract.options.address, contractInfo);
+        return parseContractInfo(web3, contract.options.address, contractInfo);
     });
 }
 exports.getContractInfo = getContractInfo;
@@ -204,17 +203,14 @@ const marketSearchOptions = {
     filterMarketCategories: null,
     filterMarketIntervals: null
 };
-function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
-    const contractMarkets = contractDescription.contractMarkets;
-    const contractMarketLister = contractDescription.contractMarketLister;
-    const timestampCreatedMarkets = contractDescription.timestampCreatedMarkets;
-    const fromBlock = contractDescription.blockCreated; //TODO is this the right
+function marketSearchSetup(contractInfo, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
     options = Object.assign({}, marketSearchOptions, options || {});
     const filterMarketIntervals = options.filterMarketIntervals || constants_1.marketIntervalsAll;
     return {
-        contractMarkets: contractMarkets,
-        contractMarketLister: contractMarketLister,
-        timestampCreatedMarkets: timestampCreatedMarkets,
+        contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
+        eventName: contractInfo ? 'MarketCreateLister' : 'MarketCreate',
+        fromBlock: contractInfo.blockCreatedMarketLister || contractInfo.blockCreatedMarkets,
+        timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
         marketIntervalsSorted: filterMarketIntervals,
         expirationDatetimeEnd: expirationDatetimeEnd || constants_1.expirationDatetimeMax,
         // contains timestamps that are already included
@@ -227,8 +223,7 @@ function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether 
             // TODO +1?
             return (Math.floor((blockTimestampLatest + maxFuture[marketInterval]) / divider)) * divider;
         }),
-        fromBlock: fromBlock || 0,
-        toBlock: toBlock || 'latest',
+        toBlock: toBlock,
         filterFunc: options.filterFunc,
         filtersMax: options.filtersMax,
         filterMarketCategories: options.filterMarketCategories,
@@ -239,11 +234,11 @@ function marketSearchSetup(contractDescription, expirationDatetimeEnd, /* ether 
     };
 }
 exports.marketSearchSetup = marketSearchSetup;
-function getMarketCreateEventsIntern(contractDescription, marketSearch, expirationDatetimeStart, limit // TODO as part of options
+function getMarketCreateEventsIntern(marketSearch, expirationDatetimeStart, limit // TODO as part of options
 ) {
     expirationDatetimeStart = expirationDatetimeStart || marketSearch.timestampCreatedMarkets; // TODO
-    const contractMarkets = marketSearch.contractMarkets;
-    const contractMarketLister = marketSearch.contractMarketLister;
+    const contract = marketSearch.contract;
+    const eventName = marketSearch.eventName;
     const marketIntervalsSorted = marketSearch.marketIntervalsSorted;
     const filterMarketIntervalsTimestamp = marketSearch.filterMarketIntervalsTimestamp.slice(); // make a copy // TODO copy neccessary
     const expirationDatetimeEnd = marketSearch.expirationDatetimeEnd;
@@ -286,8 +281,6 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
             }),
         ]);
     }
-    const eventName = contractMarketLister ? 'MarketCreateLister' : 'MarketCreate';
-    const contract = contractMarketLister || contractMarkets;
     //console.log('expirationDatetimeFilterList:', expirationDatetimeFilterList.map(function(filterValue){return '0x'+filterValue.toString(16);}).join(',\n'));
     //console.log('expirationDatetimeFilterList.length:', expirationDatetimeFilterList.length);
     const filter = {
@@ -348,11 +341,11 @@ function getMarketCreateEventsIntern(contractDescription, marketSearch, expirati
  * search is exhausted (expirationDatetimeStart or blockCreated is reached)
  * TODO
  */
-function getMarketCreateEvents(contractDescription, marketSearch, expirationDatetimeStart, limit // TODO as part of options
+function getMarketCreateEvents(marketSearch, expirationDatetimeStart, limit // TODO as part of options
 ) {
     let eventsAll = [];
     function loop() {
-        return getMarketCreateEventsIntern(contractDescription, marketSearch, expirationDatetimeStart, limit)
+        return getMarketCreateEventsIntern(marketSearch, expirationDatetimeStart, limit)
             .then(function (results) {
             const events = results[0];
             marketSearch = results[1];
@@ -371,9 +364,8 @@ function getMarketDataList(web3, contractAddr, userAddr, expirationDatetime, opt
     const contract = new web3.eth.Contract((0, digioptions_markets_abi_1.default)(), contractAddr);
     let marketDataListAll = [];
     let marketSearch;
-    let contractDescription;
     function marketLoop() {
-        return getMarketCreateEvents(contractDescription, marketSearch, expirationDatetime, /* expirationDatetimeStart */ limitPerFetch //limit /* optional */
+        return getMarketCreateEvents(marketSearch, expirationDatetime, /* expirationDatetimeStart */ limitPerFetch //limit /* optional */
         )
             .then(function (result) {
             const events = result[0];
@@ -406,10 +398,10 @@ function getMarketDataList(web3, contractAddr, userAddr, expirationDatetime, opt
         return contract.methods.getContractInfo().call();
     })
         .then(function (contractInfo) {
-        return contractInfoToContractDescription(web3, contractAddr, contractInfo);
+        return parseContractInfo(web3, contractAddr, contractInfo);
     })
-        .then(function (contractDescription) {
-        marketSearch = marketSearchSetup(contractDescription, null, //expirationDatetimeEnd,
+        .then(function (contractInfo) {
+        marketSearch = marketSearchSetup(contractInfo, null, //expirationDatetimeEnd,
         blockTimestampLatest, toBlock, options);
         return true; // dummy value
     })

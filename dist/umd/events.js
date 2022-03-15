@@ -100,7 +100,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                 if (!(_i < iterator_1.length)) return [3 /*break*/, 10];
                                 blockRange = iterator_1[_i];
                                 iteratorIdxCurrent = iteratorIdx++;
-                                eventsNew = new Array(eventNameAndFilterList.length).fill([]);
+                                eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
                                 _a = 0, _b = eventNameAndFilterList.entries();
                                 _f.label = 2;
                             case 2:
@@ -130,9 +130,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                 throw new Error(error);
                             case 6:
                                 eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
-                                if (eventName === 'PositionChange') {
-                                    console.log('xx', idx, eventName, filter, eventsNew[idx].length);
-                                }
                                 _f.label = 7;
                             case 7:
                                 _a++;
@@ -157,7 +154,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return __generator(this, function (_g) {
                 switch (_g.label) {
                     case 0:
-                        eventLists = new Array(eventNameAndFilterList.length).fill([]);
+                        eventLists = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
                         iteratorIdx = 0;
                         iterationsFinished = 0;
                         error = null;
