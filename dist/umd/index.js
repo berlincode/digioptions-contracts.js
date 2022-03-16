@@ -235,7 +235,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         var filterMarketIntervals = options.filterMarketIntervals || constants_1.marketIntervalsAll;
         return {
             contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
-            eventName: contractInfo ? 'MarketCreateLister' : 'MarketCreate',
+            eventName: contractInfo.contractMarketLister ? 'MarketCreateLister' : 'MarketCreate',
             fromBlock: contractInfo.blockCreatedMarketLister || contractInfo.blockCreatedMarkets,
             timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
             marketIntervalsSorted: filterMarketIntervals,
@@ -400,7 +400,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 //console.log('events', events);
                 var marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
                 //console.log('marketKeys', contractAddr, marketKeys);
-                var contract = marketSearch.contractMarketLister || marketSearch.contractMarkets;
+                var contract = marketSearch.contract;
                 if (marketKeys.length == 0) {
                     //console.log('TODO handle me 1'); // TODO handle
                     return [];

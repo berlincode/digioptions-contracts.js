@@ -243,7 +243,7 @@ function marketSearchSetup(
 
   return {
     contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
-    eventName: contractInfo? 'MarketCreateLister' : 'MarketCreate',
+    eventName: contractInfo.contractMarketLister? 'MarketCreateLister' : 'MarketCreate',
     fromBlock: contractInfo.blockCreatedMarketLister || contractInfo.blockCreatedMarkets,
     timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
     marketIntervalsSorted: filterMarketIntervals, // TODO rename
@@ -450,7 +450,7 @@ function getMarketDataList(web3, contractAddr, userAddr, expirationDatetime, opt
         //console.log('events', events);
         const marketKeys = events.map(function(evt){return evt.returnValues.marketKey;});
         //console.log('marketKeys', contractAddr, marketKeys);
-        const contract = marketSearch.contractMarketLister || marketSearch.contractMarkets;
+        const contract = marketSearch.contract;
         if (marketKeys.length == 0){
           //console.log('TODO handle me 1'); // TODO handle
           return [];

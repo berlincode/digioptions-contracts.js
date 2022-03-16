@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.54.0",
+  "version": "0.55.0",
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "MIT",
