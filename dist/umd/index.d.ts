@@ -13,7 +13,8 @@ export function marketListerInfoToMarketListerDescription(web3: any, contractLis
     };
     signerDataList: any;
 };
-export function sortEventsByExpirationDatetime(events: any): any;
+export function sortMarketCreateEventsByExpirationDatetime(events: any): any;
+export function sortPositionChangeEventsByDatetime(events: any): any;
 export function filterEventsByExpirationDatetime(events: any, expirationDatetimeStart: any, expirationDatetimeEnd: any): any;
 export function marketSearchSetup(contractInfo: any, expirationDatetimeEnd: any, blockTimestampLatest: any, toBlock: any, options: any): {
     contract: any;

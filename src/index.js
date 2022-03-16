@@ -138,7 +138,7 @@ function marketListerInfoToMarketListerDescription(web3, contractListerInfo){
   };
 }
 
-function sortEventsByExpirationDatetime(events){
+function sortMarketCreateEventsByExpirationDatetime(events){
   // the first element will contain the market with the highest expiration date
   return events.sort(function(evtA, evtB){
     // first try to sort by expirationDatetime
@@ -158,12 +158,33 @@ function sortEventsByExpirationDatetime(events){
       return 1;
     }
 
-    // then try to sort by eventKey to get a deterministic dehavior
-    if (evtB.returnValues.marketKey > evtA.returnValues.marketKey)
-      return -1;
-    if (evtB.returnValues.marketKey < evtA.returnValues.marketKey)
+    // then try to sort by marketKey to get a deterministic dehavior
+    if (evtB.returnValues.marketKey !== evtA.returnValues.marketKey){
+      if (evtB.returnValues.marketKey > evtA.returnValues.marketKey)
+        return -1;
       return 1;
+    }
     return 0;
+  });
+}
+
+function sortPositionChangeEventsByDatetime(events){
+  // the first element will contain the market with the highest expiration date
+  return events.sort(function(evtA, evtB) {
+
+    // first try to sort by datetime
+    if (evtA.returnValues.datetime !== evtB.returnValues.datetime){
+      return evtA.returnValues.datetime - evtB.returnValues.datetime;
+    }
+
+    // then try to sort by id to get a deterministic dehavior
+    if (evtB.id !== evtA.id){
+      if (evtB.id > evtA.id)
+        return -1;
+      return 1;
+    }
+    return 0;
+
   });
 }
 
@@ -333,7 +354,7 @@ function getMarketCreateEventsIntern(
   )
     .then(function(eventsNewList){
       const eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
-      const eventsSorted = sortEventsByExpirationDatetime(
+      const eventsSorted = sortMarketCreateEventsByExpirationDatetime(
         filterEventsByExpirationDatetime(
           eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining),
           expirationDatetimeStart, //expirationDatetimeStart
@@ -616,7 +637,8 @@ export {
   digioptionsMarketListerAbi,
   getContractInfo,
   marketListerInfoToMarketListerDescription,
-  sortEventsByExpirationDatetime,
+  sortMarketCreateEventsByExpirationDatetime,
+  sortPositionChangeEventsByDatetime,
   filterEventsByExpirationDatetime,
   marketSearchSetup,
   getMarketCreateEvents,

@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
-    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
+    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
     var web3Utils = __importStar(require("web3-utils"));
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
@@ -147,7 +147,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
     }
     exports.marketListerInfoToMarketListerDescription = marketListerInfoToMarketListerDescription;
-    function sortEventsByExpirationDatetime(events) {
+    function sortMarketCreateEventsByExpirationDatetime(events) {
         // the first element will contain the market with the highest expiration date
         return events.sort(function (evtA, evtB) {
             // first try to sort by expirationDatetime
@@ -164,15 +164,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     return -1;
                 return 1;
             }
-            // then try to sort by eventKey to get a deterministic dehavior
-            if (evtB.returnValues.marketKey > evtA.returnValues.marketKey)
-                return -1;
-            if (evtB.returnValues.marketKey < evtA.returnValues.marketKey)
+            // then try to sort by marketKey to get a deterministic dehavior
+            if (evtB.returnValues.marketKey !== evtA.returnValues.marketKey) {
+                if (evtB.returnValues.marketKey > evtA.returnValues.marketKey)
+                    return -1;
                 return 1;
+            }
             return 0;
         });
     }
-    exports.sortEventsByExpirationDatetime = sortEventsByExpirationDatetime;
+    exports.sortMarketCreateEventsByExpirationDatetime = sortMarketCreateEventsByExpirationDatetime;
+    function sortPositionChangeEventsByDatetime(events) {
+        // the first element will contain the market with the highest expiration date
+        return events.sort(function (evtA, evtB) {
+            // first try to sort by datetime
+            if (evtA.returnValues.datetime !== evtB.returnValues.datetime) {
+                return evtA.returnValues.datetime - evtB.returnValues.datetime;
+            }
+            // then try to sort by id to get a deterministic dehavior
+            if (evtB.id !== evtA.id) {
+                if (evtB.id > evtA.id)
+                    return -1;
+                return 1;
+            }
+            return 0;
+        });
+    }
+    exports.sortPositionChangeEventsByDatetime = sortPositionChangeEventsByDatetime;
     function filterEventsByExpirationDatetime(events, expirationDatetimeStart, expirationDatetimeEnd) {
         // both ends (expirationDatetimeStart and expirationDatetimeEnd) included
         expirationDatetimeStart = expirationDatetimeStart || 0;
@@ -307,7 +325,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         ])
             .then(function (eventsNewList) {
             var eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
-            var eventsSorted = sortEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
+            var eventsSorted = sortMarketCreateEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
             expirationDatetimeEnd //expirationDatetimeEnd
             ));
             // TODO we can only return values where we are sure that they are in order
