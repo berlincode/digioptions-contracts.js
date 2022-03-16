@@ -33,7 +33,7 @@ const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
 const constants_1 = require("./constants");
-const events_js_1 = require("./events.js");
+const events_1 = require("./events");
 const digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
 exports.digioptionsMarketsAbi = digioptions_markets_abi_1.default;
 const digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
@@ -306,7 +306,7 @@ function getMarketCreateEventsIntern(marketSearch, expirationDatetimeStart, limi
     };
     if (marketSearch.filterMarketCategories)
         filter.marketCategory = marketSearch.filterMarketCategories;
-    return (0, events_js_1.getPastEvents)(contract, fromBlock, // fromBlock
+    return (0, events_1.getPastEvents)(contract, fromBlock, // fromBlock
     toBlock, // toBlock
     [
         [

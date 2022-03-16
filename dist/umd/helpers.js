@@ -32,7 +32,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "web3-utils", "factsigner", "./index.js"], factory);
+        define(["require", "exports", "web3-utils", "factsigner", "./index"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -40,7 +40,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     exports.GasStatistics = exports.MarketsPossibleToCreate = exports.roundUpMonth = exports.roundUpWeek = exports.roundUpDay = exports.roundUpHour = void 0;
     var web3Utils = __importStar(require("web3-utils"));
     var factsigner_1 = __importDefault(require("factsigner"));
-    var digioptionsContracts = __importStar(require("./index.js"));
+    var digioptionsContracts = __importStar(require("./index"));
     function roundUpHour(epochSeconds) {
         return Math.floor((epochSeconds + 3600 - 1) / 3600) * 3600;
     }

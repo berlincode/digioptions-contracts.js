@@ -32,7 +32,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./events.js", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
+        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./events", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -42,7 +42,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
     var constants_1 = require("./constants");
-    var events_js_1 = require("./events.js");
+    var events_1 = require("./events");
     var digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
     exports.digioptionsMarketsAbi = digioptions_markets_abi_1["default"];
     var digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));
@@ -315,7 +315,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         if (marketSearch.filterMarketCategories)
             filter.marketCategory = marketSearch.filterMarketCategories;
-        return (0, events_js_1.getPastEvents)(contract, fromBlock, // fromBlock
+        return (0, events_1.getPastEvents)(contract, fromBlock, // fromBlock
         toBlock, // toBlock
         [
             [

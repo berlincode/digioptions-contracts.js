@@ -2,7 +2,7 @@
 /* eslint-env es6 */
 import * as web3Utils from 'web3-utils';
 import factsigner from 'factsigner';
-import * as digioptionsContracts from './index.js';
+import * as digioptionsContracts from './index';
 function roundUpHour(epochSeconds) {
     return Math.floor((epochSeconds + 3600 - 1) / 3600) * 3600;
 }

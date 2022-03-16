@@ -31,7 +31,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GasStatistics = exports.MarketsPossibleToCreate = exports.roundUpMonth = exports.roundUpWeek = exports.roundUpDay = exports.roundUpHour = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
-const digioptionsContracts = __importStar(require("./index.js"));
+const digioptionsContracts = __importStar(require("./index"));
 function roundUpHour(epochSeconds) {
     return Math.floor((epochSeconds + 3600 - 1) / 3600) * 3600;
 }
