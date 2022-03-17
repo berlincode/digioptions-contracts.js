@@ -36,6 +36,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
         var v = factory(require, exports);
@@ -90,51 +117,67 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             //}
             function worker() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var _i, iterator_1, blockRange, iteratorIdxCurrent, eventsNew, _a, _b, _c, idx, eventNameAndFilter, eventName, filter, _d, _e, err_1, now;
-                    return __generator(this, function (_f) {
-                        switch (_f.label) {
+                    var iterator_1, iterator_1_1, blockRange, iteratorIdxCurrent, eventsNew, _a, _b, _c, idx, eventNameAndFilter, _d, eventName, filter, _e, _f, err_1, e_1_1, now, e_2_1;
+                    var e_2, _g, e_1, _h;
+                    return __generator(this, function (_j) {
+                        switch (_j.label) {
                             case 0:
-                                _i = 0, iterator_1 = iterator;
-                                _f.label = 1;
+                                _j.trys.push([0, 15, 16, 17]);
+                                iterator_1 = __values(iterator), iterator_1_1 = iterator_1.next();
+                                _j.label = 1;
                             case 1:
-                                if (!(_i < iterator_1.length)) return [3 /*break*/, 10];
-                                blockRange = iterator_1[_i];
+                                if (!!iterator_1_1.done) return [3 /*break*/, 14];
+                                blockRange = iterator_1_1.value;
                                 iteratorIdxCurrent = iteratorIdx++;
                                 eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
-                                _a = 0, _b = eventNameAndFilterList.entries();
-                                _f.label = 2;
+                                _j.label = 2;
                             case 2:
-                                if (!(_a < _b.length)) return [3 /*break*/, 8];
-                                _c = _b[_a], idx = _c[0], eventNameAndFilter = _c[1];
-                                eventName = eventNameAndFilter[0], filter = eventNameAndFilter[1];
+                                _j.trys.push([2, 10, 11, 12]);
+                                _a = (e_1 = void 0, __values(eventNameAndFilterList.entries())), _b = _a.next();
+                                _j.label = 3;
+                            case 3:
+                                if (!!_b.done) return [3 /*break*/, 9];
+                                _c = __read(_b.value, 2), idx = _c[0], eventNameAndFilter = _c[1];
+                                _d = __read(eventNameAndFilter, 2), eventName = _d[0], filter = _d[1];
                                 if (error) {
                                     // if any worker has has an error we stop this one too
                                     return [2 /*return*/];
                                 }
-                                _f.label = 3;
-                            case 3:
-                                _f.trys.push([3, 5, , 6]);
-                                _d = eventsNew;
-                                _e = idx;
+                                _j.label = 4;
+                            case 4:
+                                _j.trys.push([4, 6, , 7]);
+                                _e = eventsNew;
+                                _f = idx;
                                 return [4 /*yield*/, contract.getPastEvents(eventName, {
                                         filter: filter,
                                         fromBlock: blockRange.fromBlock,
                                         toBlock: blockRange.toBlock
                                     })];
-                            case 4:
-                                _d[_e] = _f.sent();
-                                return [3 /*break*/, 6];
                             case 5:
-                                err_1 = _f.sent();
+                                _e[_f] = _j.sent();
+                                return [3 /*break*/, 7];
+                            case 6:
+                                err_1 = _j.sent();
                                 error = err_1;
                                 throw new Error(error);
-                            case 6:
-                                eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
-                                _f.label = 7;
                             case 7:
-                                _a++;
-                                return [3 /*break*/, 2];
+                                eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
+                                _j.label = 8;
                             case 8:
+                                _b = _a.next();
+                                return [3 /*break*/, 3];
+                            case 9: return [3 /*break*/, 12];
+                            case 10:
+                                e_1_1 = _j.sent();
+                                e_1 = { error: e_1_1 };
+                                return [3 /*break*/, 12];
+                            case 11:
+                                try {
+                                    if (_b && !_b.done && (_h = _a["return"])) _h.call(_a);
+                                }
+                                finally { if (e_1) throw e_1.error; }
+                                return [7 /*endfinally*/];
+                            case 12:
                                 /* update progress */
                                 iterationsFinished++;
                                 if (progressCallback) {
@@ -144,11 +187,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                         progressCallback(iterationsFinished / iterator.iterations(), eventsNew); // events might not be in order
                                     }
                                 }
-                                _f.label = 9;
-                            case 9:
-                                _i++;
+                                _j.label = 13;
+                            case 13:
+                                iterator_1_1 = iterator_1.next();
                                 return [3 /*break*/, 1];
-                            case 10: return [2 /*return*/];
+                            case 14: return [3 /*break*/, 17];
+                            case 15:
+                                e_2_1 = _j.sent();
+                                e_2 = { error: e_2_1 };
+                                return [3 /*break*/, 17];
+                            case 16:
+                                try {
+                                    if (iterator_1_1 && !iterator_1_1.done && (_g = iterator_1["return"])) _g.call(iterator_1);
+                                }
+                                finally { if (e_2) throw e_2.error; }
+                                return [7 /*endfinally*/];
+                            case 17: return [2 /*return*/];
                         }
                     });
                 });
@@ -178,3 +232,4 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
     exports.getPastEvents = getPastEvents;
 });
+//# sourceMappingURL=events.js.map

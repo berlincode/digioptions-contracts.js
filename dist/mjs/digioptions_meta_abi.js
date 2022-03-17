@@ -189,3 +189,4 @@ const data = [
 export default function () {
     return data;
 }
+//# sourceMappingURL=digioptions_meta_abi.js.map

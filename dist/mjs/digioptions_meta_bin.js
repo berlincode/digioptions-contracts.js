@@ -5,3 +5,4 @@ const data = "0x608060405234801561001057600080fd5b50610db2806100206000396000f3fe
 export default function () {
     return data;
 }
+//# sourceMappingURL=digioptions_meta_bin.js.map

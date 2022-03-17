@@ -4,6 +4,7 @@
         "allowSyntheticDefaultImports": true,
         "baseUrl": "src",
         "declaration": true,
+        "downlevelIteration": true,
         "esModuleInterop": true,
         "inlineSourceMap": false,
         "lib": ["esnext"],
@@ -14,6 +15,7 @@
         "pretty": true,
         "rootDir": "src",
         "skipLibCheck": true,
+        "sourceMap": true,
         "strict": true,
         "traceResolution": false,
         "types": ["node"]

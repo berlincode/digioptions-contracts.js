@@ -141,3 +141,4 @@ GasStatistics.prototype.getJsonString = function () {
     //}
     return orderedStringify(this.statistics, 2);
 };
+//# sourceMappingURL=helpers.js.map

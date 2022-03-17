@@ -1052,3 +1052,4 @@ const data = [
 export default function () {
     return data;
 }
+//# sourceMappingURL=digioptions_markets_abi.js.map

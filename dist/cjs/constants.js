@@ -39,3 +39,4 @@ const marketIntervalsAll = [
     factsigner_1.default.constants.marketInterval.YEARLY
 ];
 exports.marketIntervalsAll = marketIntervalsAll;
+//# sourceMappingURL=constants.js.map

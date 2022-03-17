@@ -5,3 +5,4 @@ const data = "0x608060405234801561001057600080fd5b504360015542600055614b27806100
 export default function () {
     return data;
 }
+//# sourceMappingURL=digioptions_markets_bin.js.map

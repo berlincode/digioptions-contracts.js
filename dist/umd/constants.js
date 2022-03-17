@@ -49,3 +49,4 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     ];
     exports.marketIntervalsAll = marketIntervalsAll;
 });
+//# sourceMappingURL=constants.js.map

@@ -104,3 +104,4 @@ function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, { n
     });
 }
 exports.getPastEvents = getPastEvents;
+//# sourceMappingURL=events.js.map

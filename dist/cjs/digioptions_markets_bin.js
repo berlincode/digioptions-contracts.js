@@ -8,3 +8,4 @@ function default_1() {
     return data;
 }
 exports.default = default_1;
+//# sourceMappingURL=digioptions_markets_bin.js.map

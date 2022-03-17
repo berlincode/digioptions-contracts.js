@@ -27,3 +27,4 @@ const marketIntervalsAll = [
     factsigner.constants.marketInterval.YEARLY
 ];
 export { userState, contractType, baseUnitExpDefault, expirationDatetimeMax, atomicOptionPayoutWeiExp, atomicOptionsPerFullOptionExp, marketIntervalsAll, };
+//# sourceMappingURL=constants.js.map

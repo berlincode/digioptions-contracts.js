@@ -107,3 +107,4 @@ GasStatistics.prototype.getJsonString = function () {
     return orderedStringify(this.statistics, 2);
 };
 export { roundUpHour, roundUpDay, roundUpWeek, roundUpMonth, MarketsPossibleToCreate, GasStatistics, };
+//# sourceMappingURL=helpers.js.map

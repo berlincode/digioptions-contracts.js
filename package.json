@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.55.0",
+  "version": "0.57.0",
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "MIT",
@@ -16,7 +16,9 @@
     "eslint": "eslint *.cjs src/ ./test* ./tools",
     "coverage": "cd coverage && istanbul report html && open-cli coverage/index.html",
     "profiler": "cd profiler && istanbul report html && open-cli coverage/index.html",
+    "watch-cjs": "tsc -p tsconfig-cjs.json --watch",
     "watch-mjs": "tsc -p tsconfig-mjs.json --watch",
+    "watch-umd": "tsc -p tsconfig-umd.json --watch",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
     "postinstall": "patch-package"
   },

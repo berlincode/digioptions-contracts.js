@@ -89,3 +89,4 @@ export {
 maximumBlockRangeDefault, numConcurrencyDefault, 
 // functions
 blockIteratorReverse, getPastEvents, };
+//# sourceMappingURL=events.js.map

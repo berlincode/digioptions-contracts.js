@@ -488,3 +488,4 @@ const versionMarkets = {
     bugfix: 0
 };
 export { digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
+//# sourceMappingURL=index.js.map

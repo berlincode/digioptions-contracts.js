@@ -691,3 +691,4 @@ const data = [
 export default function () {
     return data;
 }
+//# sourceMappingURL=digioptions_market_lister_abi.js.map

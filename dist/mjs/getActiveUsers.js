@@ -24,3 +24,4 @@ function getActiveUsers(contract, marketHashes) {
     });
 }
 export { getActiveUsers, };
+//# sourceMappingURL=getActiveUsers.js.map

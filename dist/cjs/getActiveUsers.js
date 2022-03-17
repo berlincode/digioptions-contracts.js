@@ -50,3 +50,4 @@ function getActiveUsers(contract, marketHashes) {
     });
 }
 exports.getActiveUsers = getActiveUsers;
+//# sourceMappingURL=getActiveUsers.js.map

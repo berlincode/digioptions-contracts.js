@@ -192,3 +192,4 @@ function default_1() {
     return data;
 }
 exports.default = default_1;
+//# sourceMappingURL=digioptions_meta_abi.js.map
