@@ -28,12 +28,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
+exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
 const constants_1 = require("./constants");
 const events_1 = require("./events");
+Object.defineProperty(exports, "getPastEvents", { enumerable: true, get: function () { return events_1.getPastEvents; } });
 const digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
 exports.digioptionsMarketsAbi = digioptions_markets_abi_1.default;
 const digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));

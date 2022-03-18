@@ -37,12 +37,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
-    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
+    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = void 0;
     var web3Utils = __importStar(require("web3-utils"));
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
     var constants_1 = require("./constants");
     var events_1 = require("./events");
+    exports.getPastEvents = events_1.getPastEvents;
     var digioptions_markets_abi_1 = __importDefault(require("./digioptions_markets_abi"));
     exports.digioptionsMarketsAbi = digioptions_markets_abi_1["default"];
     var digioptions_market_lister_abi_1 = __importDefault(require("./digioptions_market_lister_abi"));

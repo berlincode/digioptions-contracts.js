@@ -643,6 +643,7 @@ export {
   marketSearchSetup,
   getMarketCreateEvents,
   getMarketDataList,
+  getPastEvents,
   marketHash,
   orderOfferToHash,
   signOrderOffer,

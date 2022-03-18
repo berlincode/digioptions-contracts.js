@@ -35,6 +35,7 @@ export function marketSearchSetup(contractInfo: any, expirationDatetimeEnd: any,
 };
 export function getMarketCreateEvents(marketSearch: any, expirationDatetimeStart: any, limit: any): any;
 export function getMarketDataList(web3: any, contractAddr: any, userAddr: any, expirationDatetime: any, options: any): any;
+import { getPastEvents } from "./events";
 export function marketHash(marketBaseData: any): string | null;
 export function orderOfferToHash(order: any): string | null;
 export function signOrderOffer(offer: any, privateKey: any): {
@@ -61,4 +62,4 @@ export namespace versionMarkets {
     const bugfix_1: number;
     export { bugfix_1 as bugfix };
 }
-export { digioptionsMarketsAbi, digioptionsMarketListerAbi };
+export { digioptionsMarketsAbi, digioptionsMarketListerAbi, getPastEvents };
