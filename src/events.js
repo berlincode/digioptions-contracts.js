@@ -28,6 +28,9 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
     iterations: function(){ // custom method for progress calculation
       return iterations;
     },
+    stop: function(){
+      done = true;
+    },
     [Symbol.iterator]: function() {return this;} // iterable protocol
   };
 }
