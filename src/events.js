@@ -1,7 +1,7 @@
 // vim: sts=2:ts=2:sw=2
 /* eslint-env es6 */
 
-import {makeBatchRequestPromise, getPastEventsForBatchRequest, getBlockForBatchRequest} from './web3helpers';
+import {makeBatchRequestPromise, getPastEventsForBatchRequest, getBlockForBatchRequest} from './batch';
 
 const maximumBlockRangeDefault = 172800;
 const numConcurrencyDefault = 2;
@@ -37,6 +37,31 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
   };
 }
 
+/* push in arrays with and index and get back them back concatenated in order */
+function inOrderArrayProducer() {
+  const dataArrays = [];
+  let idxStartNext = 0;
+
+  return {
+    getAll: function() {
+      return [].concat.apply([], dataArrays);
+    },
+    getNew: function() { // returns all in order
+      let idxEnd = idxStartNext;
+      while(dataArrays[idxEnd] !== undefined){
+        idxEnd ++;
+      }
+      console.log('---', idxStartNext, idxEnd);
+      const array = [].concat.apply([], dataArrays.slice(idxStartNext, idxEnd));
+      idxStartNext = idxEnd;
+      return array;
+    },
+    push: function(idx, dataArray){ // custom method for progress calculation
+      dataArrays[idx] = dataArray;
+    },
+  };
+}
+
 /* getPastEvents:
  *    similar to contract.getPastEvents() but iterates over a given block
  *    range in small chunks that are not larger that maximumBlockRange
@@ -56,13 +81,13 @@ async function getPastEvents(
     timestampStop = null, // stop iterator if timestamp is reached (unix epoch)
   } = {}
 ){
-  let eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
+  const eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => inOrderArrayProducer()); 
+  const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
+
   let iteratorIdx = 0; // fill eventLists in-order
   let iterationsFinished = 0; // for progress calculation
-  let error = null;
-  let nextCallAllowed = 0;
-
-  const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
+  let error = null; // stop all workers on error 
+  let nextCallAllowed = 0; // for callback debouning
 
   //for (let [eventName, _filter] of eventNameAndFilterList) {
   //  console.log('getPastEvents', eventName, fromBlock, toBlock);
@@ -71,8 +96,6 @@ async function getPastEvents(
   async function worker() {
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
-      // create an empty array for each eventNameAndFilter
-      let eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
 
       for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
         const [eventName, filter] = eventNameAndFilter;
@@ -94,7 +117,7 @@ async function getPastEvents(
             )
           ];
 
-          if (timestampStop && (idx===0)) {
+          if ((timestampStop !== null) && (idx===0)) {
             // additionally fetch block info (for timestamp) with BatchRequest of first entry in eventNameAndFilterList
             callsAndParams.push(
               [getBlockForBatchRequest(contract), blockRange.fromBlock]
@@ -104,9 +127,9 @@ async function getPastEvents(
             new contract.BatchRequest(),
             callsAndParams
           );
-          eventsNew[idx] = results[0]; // result from getPastEvents
+          eventLists[idx].push(iteratorIdxCurrent, results[0]); // result[0] is from getPastEvents
 
-          if (results[1] && results[1].timestamp && (results[1].timestamp < timestampStop)) {
+          if (results[1] && results[1].timestamp && (results[1].timestamp <= timestampStop)) {
             // stop iterator
             iterator.stop();
           }
@@ -115,7 +138,6 @@ async function getPastEvents(
           error = err;
           throw new Error(error);
         }
-        eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
       }
 
       /* update progress */
@@ -127,7 +149,12 @@ async function getPastEvents(
         if (now > nextCallAllowed) {
           nextCallAllowed = now + progressCallbackDebounce;
 
-          progressCallback(iterationsFinished/iterator.iterations(), eventsNew); // events might not be in order
+          // TODO better estimate if timestampStop is used
+          progressCallback(
+            iterationsFinished/iterator.iterations(), // progress
+            eventLists.map(function(x){return x.getNew();}),
+            false, // final
+          );
         }
       }
     }
@@ -138,12 +165,21 @@ async function getPastEvents(
 
   await Promise.all(workers); // reject immediately if any of the promises reject 
 
+  /* final progressCallback */
+  if (progressCallback){
+    progressCallback(
+      1, // progress
+      eventLists.map(function(x){return x.getNew();}),
+      true // final
+    );
+  }
+
   if (error){
     throw new Error(error);
   }
 
   // join all list of events for each eventNameAndFilter
-  return eventLists.map(function(x){return [].concat.apply([], x);});
+  return eventLists.map(function(x){return x.getAll();});
 }
 
 export {
