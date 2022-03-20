@@ -1,6 +1,8 @@
 // vim: sts=2:ts=2:sw=2
 /* eslint-env es6 */
 
+import {makeBatchRequestPromise, getPastEventsForBatchRequest, getBlockForBatchRequest} from './web3helpers';
+
 const maximumBlockRangeDefault = 172800;
 const numConcurrencyDefault = 2;
 
@@ -51,6 +53,7 @@ async function getPastEvents(
     progressCallback = null, /* returns a value between 0 and 1 */
     blockIterator = blockIteratorReverse,
     progressCallbackDebounce = 350, // in milliseconds
+    timestampStop = null, // stop iterator if timestamp is reached (unix epoch)
   } = {}
 ){
   let eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
@@ -78,14 +81,36 @@ async function getPastEvents(
           return;
         }
         try {
-          eventsNew[idx] = await contract.getPastEvents(
-            eventName,
-            {
-              filter: filter,
-              fromBlock: blockRange.fromBlock,
-              toBlock: blockRange.toBlock
-            }
+
+          const callsAndParams = [
+            getPastEventsForBatchRequest(
+              contract, 
+              eventName,
+              {
+                filter: filter,
+                fromBlock: blockRange.fromBlock,
+                toBlock: blockRange.toBlock
+              }
+            )
+          ];
+
+          if (timestampStop && (idx===0)) {
+            // additionally fetch block info (for timestamp) with BatchRequest of first entry in eventNameAndFilterList
+            callsAndParams.push(
+              [getBlockForBatchRequest(contract), blockRange.fromBlock]
+            );
+          }
+          const results = await makeBatchRequestPromise(
+            new contract.BatchRequest(),
+            callsAndParams
           );
+          eventsNew[idx] = results[0]; // result from getPastEvents
+
+          if (results[1] && results[1].timestamp && (results[1].timestamp < timestampStop)) {
+            // stop iterator
+            iterator.stop();
+          }
+
         } catch (err) {
           error = err;
           throw new Error(error);
