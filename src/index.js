@@ -169,12 +169,12 @@ function sortMarketCreateEventsByExpirationDatetime(events){
 }
 
 function sortPositionChangeEventsByDatetime(events){
-  // the first element will contain the market with the highest expiration date
+  // the first element will contain the event with the most recent date
   return events.sort(function(evtA, evtB) {
 
     // first try to sort by datetime
     if (evtA.returnValues.datetime !== evtB.returnValues.datetime){
-      return evtA.returnValues.datetime - evtB.returnValues.datetime;
+      return evtB.returnValues.datetime - evtA.returnValues.datetime;
     }
 
     // then try to sort by id to get a deterministic dehavior
