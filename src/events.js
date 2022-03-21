@@ -43,15 +43,14 @@ function inOrderArrayProducer() {
   let idxStartNext = 0;
 
   return {
-    getAll: function() {
+    getAll: function() { // returns all
       return [].concat.apply([], dataArrays);
     },
-    getNew: function() { // returns all in order
+    getNew: function() { // returns new in order
       let idxEnd = idxStartNext;
       while(dataArrays[idxEnd] !== undefined){
         idxEnd ++;
       }
-      console.log('---', idxStartNext, idxEnd);
       const array = [].concat.apply([], dataArrays.slice(idxStartNext, idxEnd));
       idxStartNext = idxEnd;
       return array;
@@ -96,6 +95,7 @@ async function getPastEvents(
   async function worker() {
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
+      const eventNewList = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
 
       for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
         const [eventName, filter] = eventNameAndFilter;
@@ -127,7 +127,7 @@ async function getPastEvents(
             new contract.BatchRequest(),
             callsAndParams
           );
-          eventLists[idx].push(iteratorIdxCurrent, results[0]); // result[0] is from getPastEvents
+          eventNewList[idx] = results[0]; // result[0] is from getPastEvents
 
           if (results[1] && results[1].timestamp && (results[1].timestamp <= timestampStop)) {
             // stop iterator
@@ -138,6 +138,11 @@ async function getPastEvents(
           error = err;
           throw new Error(error);
         }
+      }
+
+      // add all events for the same blockRange at once
+      for (const [idx, eventList] of eventLists.entries()) {
+        eventList.push(iteratorIdxCurrent, eventNewList[idx]);
       }
 
       /* update progress */
