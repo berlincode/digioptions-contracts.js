@@ -51,18 +51,33 @@ function inOrderArrayProducer() {
   const dataArrays = [];
   let idxStartNext = 0;
 
+  function getIdxEnd(){
+    // returns the last index+1 of continous filled area
+    let idxEnd = idxStartNext;
+    while(dataArrays[idxEnd] !== undefined){
+      idxEnd ++;
+    }
+    return idxEnd;
+  }
+
   return {
     getAll: function() { // returns all
       return [].concat.apply([], dataArrays);
     },
     getNew: function() { // returns new in order
-      let idxEnd = idxStartNext;
-      while(dataArrays[idxEnd] !== undefined){
-        idxEnd ++;
-      }
+      const idxEnd = getIdxEnd();
       const array = [].concat.apply([], dataArrays.slice(idxStartNext, idxEnd));
       idxStartNext = idxEnd;
       return array;
+    },
+    getLast: function() { // similar to getNew but only returns the last element of continous area
+      // returns null if nothing to return
+      const idxEnd = getIdxEnd();
+      if (idxEnd > idxStartNext) {
+        idxStartNext = idxEnd;
+        return dataArrays[idxEnd-1];
+      }
+      return null;
     },
     push: function(idx, dataArray){ // custom method for progress calculation
       dataArrays[idx] = dataArray;
@@ -90,6 +105,7 @@ async function getPastEvents(
   } = {}
 ){
   const eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => inOrderArrayProducer()); 
+  const blockInfos = inOrderArrayProducer(); 
   const iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
 
   let iteratorIdx = 0; // fill eventLists in-order
@@ -105,6 +121,7 @@ async function getPastEvents(
     for (let blockRange of iterator) {
       const iteratorIdxCurrent = iteratorIdx++;
       const eventNewList = new Array(eventNameAndFilterList.length).fill(null).map(() => []); 
+      let block = null;
 
       for (const [idx, eventNameAndFilter] of eventNameAndFilterList.entries()) {
         const [eventName, filter] = eventNameAndFilter;
@@ -127,20 +144,24 @@ async function getPastEvents(
           ];
 
           if ((timestampStop !== null) && (idx===0)) {
-            // additionally fetch block info (for timestamp) with BatchRequest of first entry in eventNameAndFilterList
+            // additionally make getBlock() call (for timestamp) with BatchRequest of first entry in eventNameAndFilterList
             callsAndParams.push(
               [getBlockForBatchRequest(contract), blockRange.fromBlock]
             );
           }
+
           const results = await makeBatchRequestPromise(
             new contract.BatchRequest(),
             callsAndParams
           );
           eventNewList[idx] = results[0]; // result[0] is from getPastEvents
 
-          if (results[1] && results[1].timestamp && (results[1].timestamp <= timestampStop)) {
-            // stop iterator
-            iterator.stop();
+          if (results[1] && results[1].timestamp){
+            block = results[1]; // result[0] is from getBlock
+            if (block.timestamp <= timestampStop) {
+              // stop iterator
+              iterator.stop();
+            }
           }
 
         } catch (err) {
@@ -153,6 +174,7 @@ async function getPastEvents(
       for (const [idx, eventList] of eventLists.entries()) {
         eventList.push(iteratorIdxCurrent, eventNewList[idx]);
       }
+      blockInfos.push(iteratorIdxCurrent, {number: blockRange.fromBlock, timestamp: block && block.timestamp});
 
       /* update progress */
       iterationsFinished++;
@@ -166,6 +188,7 @@ async function getPastEvents(
           if (progressCallback(
             iterationsFinished/iterator.iterations(), // progress // TODO better estimate if timestampStop is used
             eventLists.map(function(x){return x.getNew();}),
+            blockInfos.getLast(), // might be null
             false, // final
           ) == false){
             iterator.stop(); // stop if progressCallback returns false
@@ -180,14 +203,23 @@ async function getPastEvents(
 
   await Promise.all(workers); // reject immediately if any of the promises reject 
 
+  const blockInfo = blockInfos.getLast(); // might be null
+
+  let exhausted = iterator.isExhausted();
+  if (timestampStop !== null){
+    if (blockInfo && blockInfo.timestamp && (blockInfo.timestamp <= timestampStop)){
+      exhausted = true;
+    }
+  }
   /* final progressCallback */
   if (progressCallback){
     progressCallback(
       1, // progress
       eventLists.map(function(x){return x.getNew();}),
+      blockInfo, // might be null
       true, // final
       // extra arguments if final == true
-      iterator.isExhausted(),
+      exhausted,
       iterator.nextToBlock(),
     );
   }
