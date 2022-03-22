@@ -195,6 +195,7 @@ function filterEventsByExpirationDatetime(events, expirationDatetimeStart, expir
   return events.filter(function(evt){return (evt.returnValues.expirationDatetime >= expirationDatetimeStart) && (evt.returnValues.expirationDatetime <= expirationDatetimeEnd);});
 }
 
+// deprecate this
 const dividers = [ // TODO rename into step... or segmentSizeSeconds ...
   0, // marketInterval.NONE // TODO how to handle?
   190 * 24 * 60 * 60, // YEARLY // TODO 190
@@ -206,7 +207,7 @@ const dividers = [ // TODO rename into step... or segmentSizeSeconds ...
   15 * 60// TODO SHORT_TERM: 6
 ];
 
-const maxFuture = [ // TODO rename into step... or segmentSizeSeconds ...
+const marketStartMaxIntervalBeforeExpiration = [ // TODO rename into step... or segmentSizeSeconds ...
   0, // marketInterval.NONE // TODO how to handle?
   730 * 24 * 60 * 60,
   190 * 24 * 60 * 60, // YEARLY // TODO 190
@@ -256,7 +257,7 @@ function marketSearchSetup(
         return (Math.floor(expirationDatetimeEnd/divider)+1) * divider;
       }
       // TODO +1?
-      return (Math.floor((blockTimestampLatest+maxFuture[marketInterval])/divider)) * divider;
+      return (Math.floor((blockTimestampLatest+marketStartMaxIntervalBeforeExpiration[marketInterval])/divider)) * divider;
     }),
     toBlock: toBlock,
 
@@ -633,6 +634,7 @@ const versionMarkets = {
 };
 
 export {
+  marketStartMaxIntervalBeforeExpiration,
   digioptionsMarketsAbi,
   digioptionsMarketListerAbi,
   getContractInfo,
