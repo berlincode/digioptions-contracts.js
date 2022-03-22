@@ -14,14 +14,17 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
   return {
     next: function() { // iterator protocol
 
+      if (toBlock < fromBlock){
+        done = true;
+      }
+      if (done) {
+        return {value: {}, done: done};
+      }
+
       const value = {
         fromBlock: Math.max(toBlock-maximumBlockRange+1, fromBlock),
         toBlock: toBlock
       };
-
-      if (toBlock < fromBlock){
-        done = true;
-      }
 
       toBlock = toBlock - maximumBlockRange;
 
@@ -29,6 +32,12 @@ function blockIteratorReverse(fromBlock, toBlock, maximumBlockRange) {
     },
     iterations: function(){ // custom method for progress calculation
       return iterations;
+    },
+    isExhausted: function() {
+      return (toBlock < fromBlock);
+    },
+    nextToBlock: function() {
+      return toBlock; // use only if not exhausted
     },
     stop: function(){
       done = true;
@@ -77,7 +86,7 @@ async function getPastEvents(
     progressCallback = null, /* returns a value between 0 and 1 */
     blockIterator = blockIteratorReverse,
     progressCallbackDebounce = 350, // in milliseconds
-    timestampStop = null, // stop iterator if timestamp is reached (unix epoch)
+    timestampStop = null, // stop iterator if timestamp is reached (unix epoch) / set to 0 to just get the block information
   } = {}
 ){
   const eventLists = new Array(eventNameAndFilterList.length).fill(null).map(() => inOrderArrayProducer()); 
@@ -154,12 +163,13 @@ async function getPastEvents(
         if (now > nextCallAllowed) {
           nextCallAllowed = now + progressCallbackDebounce;
 
-          // TODO better estimate if timestampStop is used
-          progressCallback(
-            iterationsFinished/iterator.iterations(), // progress
+          if (progressCallback(
+            iterationsFinished/iterator.iterations(), // progress // TODO better estimate if timestampStop is used
             eventLists.map(function(x){return x.getNew();}),
             false, // final
-          );
+          ) == false){
+            iterator.stop(); // stop if progressCallback returns false
+          }
         }
       }
     }
@@ -175,7 +185,10 @@ async function getPastEvents(
     progressCallback(
       1, // progress
       eventLists.map(function(x){return x.getNew();}),
-      true // final
+      true, // final
+      // extra arguments if final == true
+      iterator.isExhausted(),
+      iterator.nextToBlock(),
     );
   }
 
