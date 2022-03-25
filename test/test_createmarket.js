@@ -371,7 +371,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 0);
 
@@ -379,7 +378,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 0);
   });
@@ -431,7 +429,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 1);
     assert.equal(marketDataList0[0].marketHash, this.marketHash0);
@@ -440,7 +437,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 1);
     assert.equal(marketDataList1[0].marketHash, this.marketHash0);
@@ -469,7 +465,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 2);
     assert.equal(marketDataList0[0].marketHash, this.marketHash0);
@@ -479,7 +474,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 2);
     assert.equal(marketDataList1[0].marketHash, this.marketHash0);
@@ -510,7 +504,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 3);
     assert.equal(marketDataList0[0].marketHash, this.marketHash2);
@@ -521,7 +514,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 3);
     assert.equal(marketDataList1[0].marketHash, this.marketHash2);
@@ -550,7 +542,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 3);
 
@@ -558,7 +549,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 3);
   });
@@ -594,7 +584,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList0.length, 3);
     assert.equal(marketDataList0[0].marketHash, this.marketHash2);
@@ -605,7 +594,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
     );
     assert.equal(marketDataList1.length, 3);
     assert.equal(marketDataList1[0].marketHash, this.marketHash2);
@@ -618,7 +606,9 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      this.marketBaseData0.expirationDatetime, //expirationDatetime
+      {
+        expirationDatetimeStart: this.marketBaseData0.expirationDatetime,
+      }
     );
     assert.equal(marketDataList0.length, 2);
     assert.equal(marketDataList0[0].marketHash, this.marketHash2);
@@ -628,7 +618,10 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      this.marketBaseData0.expirationDatetime, //expirationDatetime
+
+      {
+        expirationDatetimeStart: this.marketBaseData0.expirationDatetime,
+      }
     );
     assert.equal(marketDataList1.length, 2);
     assert.equal(marketDataList1[0].marketHash, this.marketHash2);
@@ -666,7 +659,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketsContract.options.address,
       addrZero,
-      null, //expirationDatetime
       {
         // options
         filterFunc: function(marketData){return ! marketData.testMarket;}
@@ -678,7 +670,6 @@ describe('test createMarket and getMarketDataList', function() {
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
-      null, //expirationDatetime
       {
         // options
         filterFunc: function(marketData){return ! marketData.testMarket;}
