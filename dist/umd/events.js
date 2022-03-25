@@ -69,12 +69,13 @@ var __read = (this && this.__read) || function (o, n) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports"], factory);
+        define(["require", "exports", "./batch"], factory);
     }
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
     exports.getPastEvents = exports.blockIteratorReverse = exports.numConcurrencyDefault = exports.maximumBlockRangeDefault = void 0;
+    var batch_1 = require("./batch");
     var maximumBlockRangeDefault = 172800;
     exports.maximumBlockRangeDefault = maximumBlockRangeDefault;
     var numConcurrencyDefault = 2;
@@ -85,18 +86,30 @@ var __read = (this && this.__read) || function (o, n) {
         var iterations = Math.max(Math.floor((toBlock - fromBlock) / maximumBlockRange) + 1, 0);
         return _a = {
                 next: function () {
+                    if (toBlock < fromBlock) {
+                        done = true;
+                    }
+                    if (done) {
+                        return { value: {}, done: done };
+                    }
                     var value = {
                         fromBlock: Math.max(toBlock - maximumBlockRange + 1, fromBlock),
                         toBlock: toBlock
                     };
-                    if (toBlock < fromBlock) {
-                        done = true;
-                    }
                     toBlock = toBlock - maximumBlockRange;
                     return { value: value, done: done };
                 },
                 iterations: function () {
                     return iterations;
+                },
+                isExhausted: function () {
+                    return (toBlock < fromBlock);
+                },
+                nextToBlock: function () {
+                    return toBlock; // use only if not exhausted
+                },
+                stop: function () {
+                    done = true;
                 }
             },
             _a[Symbol.iterator] = function () { return this; } // iterable protocol
@@ -104,128 +117,212 @@ var __read = (this && this.__read) || function (o, n) {
             _a;
     }
     exports.blockIteratorReverse = blockIteratorReverse;
+    /* push in arrays with and index and get back them back concatenated in order */
+    function inOrderArrayProducer() {
+        var dataArrays = [];
+        var idxStartNext = 0;
+        function getIdxEnd() {
+            // returns the last index+1 of continous filled area
+            var idxEnd = idxStartNext;
+            while (dataArrays[idxEnd] !== undefined) {
+                idxEnd++;
+            }
+            return idxEnd;
+        }
+        return {
+            getAll: function () {
+                return [].concat.apply([], dataArrays);
+            },
+            getNew: function () {
+                var idxEnd = getIdxEnd();
+                var array = [].concat.apply([], dataArrays.slice(idxStartNext, idxEnd));
+                idxStartNext = idxEnd;
+                return array;
+            },
+            getLast: function () {
+                // returns null if nothing to return
+                var idxEnd = getIdxEnd();
+                if (idxEnd > idxStartNext) {
+                    idxStartNext = idxEnd;
+                    return dataArrays[idxEnd - 1];
+                }
+                return null;
+            },
+            push: function (idx, dataArray) {
+                dataArrays[idx] = dataArray;
+            }
+        };
+    }
     /* getPastEvents:
      *    similar to contract.getPastEvents() but iterates over a given block
      *    range in small chunks that are not larger that maximumBlockRange
      *    returns an array of array of events
      */
     function getPastEvents(contract, fromBlock, toBlock, eventNameAndFilterList, _a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.numConcurrency, numConcurrency = _c === void 0 ? numConcurrencyDefault : _c, _d = _b.maximumBlockRange, maximumBlockRange = _d === void 0 ? maximumBlockRangeDefault : _d, _e = _b.progressCallback, progressCallback = _e === void 0 ? null : _e, /* returns a value between 0 and 1 */ _f = _b.blockIterator, /* returns a value between 0 and 1 */ blockIterator = _f === void 0 ? blockIteratorReverse : _f, _g = _b.progressCallbackDebounce, progressCallbackDebounce = _g === void 0 ? 350 : _g;
+        var _b = _a === void 0 ? {} : _a, _c = _b.numConcurrency, numConcurrency = _c === void 0 ? numConcurrencyDefault : _c, _d = _b.maximumBlockRange, maximumBlockRange = _d === void 0 ? maximumBlockRangeDefault : _d, _e = _b.progressCallback, progressCallback = _e === void 0 ? null : _e, /* returns a value between 0 and 1 */ _f = _b.blockIterator, /* returns a value between 0 and 1 */ blockIterator = _f === void 0 ? blockIteratorReverse : _f, _g = _b.progressCallbackDebounce, progressCallbackDebounce = _g === void 0 ? 350 : _g, // in milliseconds
+        _h = _b.timestampStop, // in milliseconds
+        timestampStop = _h === void 0 ? null : _h;
         return __awaiter(this, void 0, void 0, function () {
             //for (let [eventName, _filter] of eventNameAndFilterList) {
             //  console.log('getPastEvents', eventName, fromBlock, toBlock);
             //}
             function worker() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var iterator_1, iterator_1_1, blockRange, iteratorIdxCurrent, eventsNew, _a, _b, _c, idx, eventNameAndFilter, _d, eventName, filter, _e, _f, err_1, e_1_1, now, e_2_1;
-                    var e_2, _g, e_1, _h;
-                    return __generator(this, function (_j) {
-                        switch (_j.label) {
+                    var iterator_1, iterator_1_1, blockRange, iteratorIdxCurrent, eventNewList, block, _a, _b, _c, idx, eventNameAndFilter, _d, eventName, filter, callsAndParams, results, err_1, e_1_1, _e, _f, _g, idx, eventList, now, e_2_1;
+                    var e_2, _h, e_1, _j, e_3, _k;
+                    return __generator(this, function (_l) {
+                        switch (_l.label) {
                             case 0:
-                                _j.trys.push([0, 15, 16, 17]);
+                                _l.trys.push([0, 14, 15, 16]);
                                 iterator_1 = __values(iterator), iterator_1_1 = iterator_1.next();
-                                _j.label = 1;
+                                _l.label = 1;
                             case 1:
-                                if (!!iterator_1_1.done) return [3 /*break*/, 14];
+                                if (!!iterator_1_1.done) return [3 /*break*/, 13];
                                 blockRange = iterator_1_1.value;
                                 iteratorIdxCurrent = iteratorIdx++;
-                                eventsNew = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
-                                _j.label = 2;
+                                eventNewList = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
+                                block = null;
+                                _l.label = 2;
                             case 2:
-                                _j.trys.push([2, 10, 11, 12]);
+                                _l.trys.push([2, 9, 10, 11]);
                                 _a = (e_1 = void 0, __values(eventNameAndFilterList.entries())), _b = _a.next();
-                                _j.label = 3;
+                                _l.label = 3;
                             case 3:
-                                if (!!_b.done) return [3 /*break*/, 9];
+                                if (!!_b.done) return [3 /*break*/, 8];
                                 _c = __read(_b.value, 2), idx = _c[0], eventNameAndFilter = _c[1];
                                 _d = __read(eventNameAndFilter, 2), eventName = _d[0], filter = _d[1];
                                 if (error) {
                                     // if any worker has has an error we stop this one too
                                     return [2 /*return*/];
                                 }
-                                _j.label = 4;
+                                _l.label = 4;
                             case 4:
-                                _j.trys.push([4, 6, , 7]);
-                                _e = eventsNew;
-                                _f = idx;
-                                return [4 /*yield*/, contract.getPastEvents(eventName, {
+                                _l.trys.push([4, 6, , 7]);
+                                callsAndParams = [
+                                    (0, batch_1.getPastEventsForBatchRequest)(contract, eventName, {
                                         filter: filter,
                                         fromBlock: blockRange.fromBlock,
                                         toBlock: blockRange.toBlock
-                                    })];
+                                    })
+                                ];
+                                if ((timestampStop !== null) && (idx === 0)) {
+                                    // additionally make getBlock() call (for timestamp) with BatchRequest of first entry in eventNameAndFilterList
+                                    callsAndParams.push([(0, batch_1.getBlockForBatchRequest)(contract), blockRange.fromBlock]);
+                                }
+                                return [4 /*yield*/, (0, batch_1.makeBatchRequestPromise)(new contract.BatchRequest(), callsAndParams)];
                             case 5:
-                                _e[_f] = _j.sent();
+                                results = _l.sent();
+                                eventNewList[idx] = results[0]; // result[0] is from getPastEvents
+                                if (results[1] && results[1].timestamp) {
+                                    block = results[1]; // result[0] is from getBlock
+                                    if (block.timestamp <= timestampStop) {
+                                        // stop iterator
+                                        iterator.stop();
+                                    }
+                                }
                                 return [3 /*break*/, 7];
                             case 6:
-                                err_1 = _j.sent();
+                                err_1 = _l.sent();
                                 error = err_1;
                                 throw new Error(error);
                             case 7:
-                                eventLists[idx][iteratorIdxCurrent] = eventsNew[idx];
-                                _j.label = 8;
-                            case 8:
                                 _b = _a.next();
                                 return [3 /*break*/, 3];
-                            case 9: return [3 /*break*/, 12];
-                            case 10:
-                                e_1_1 = _j.sent();
+                            case 8: return [3 /*break*/, 11];
+                            case 9:
+                                e_1_1 = _l.sent();
                                 e_1 = { error: e_1_1 };
-                                return [3 /*break*/, 12];
-                            case 11:
+                                return [3 /*break*/, 11];
+                            case 10:
                                 try {
-                                    if (_b && !_b.done && (_h = _a["return"])) _h.call(_a);
+                                    if (_b && !_b.done && (_j = _a["return"])) _j.call(_a);
                                 }
                                 finally { if (e_1) throw e_1.error; }
                                 return [7 /*endfinally*/];
-                            case 12:
+                            case 11:
+                                try {
+                                    // add all events for the same blockRange at once
+                                    for (_e = (e_3 = void 0, __values(eventLists.entries())), _f = _e.next(); !_f.done; _f = _e.next()) {
+                                        _g = __read(_f.value, 2), idx = _g[0], eventList = _g[1];
+                                        eventList.push(iteratorIdxCurrent, eventNewList[idx]);
+                                    }
+                                }
+                                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                                finally {
+                                    try {
+                                        if (_f && !_f.done && (_k = _e["return"])) _k.call(_e);
+                                    }
+                                    finally { if (e_3) throw e_3.error; }
+                                }
+                                blockInfos.push(iteratorIdxCurrent, { number: blockRange.fromBlock, timestamp: block && block.timestamp });
                                 /* update progress */
                                 iterationsFinished++;
                                 if (progressCallback) {
                                     now = Date.now();
                                     if (now > nextCallAllowed) {
                                         nextCallAllowed = now + progressCallbackDebounce;
-                                        progressCallback(iterationsFinished / iterator.iterations(), eventsNew); // events might not be in order
+                                        if (progressCallback(iterationsFinished / iterator.iterations(), // progress // TODO better estimate if timestampStop is used
+                                        eventLists.map(function (x) { return x.getNew(); }), blockInfos.getLast(), // might be null
+                                        false) == false) {
+                                            iterator.stop(); // stop if progressCallback returns false
+                                        }
                                     }
                                 }
-                                _j.label = 13;
-                            case 13:
+                                _l.label = 12;
+                            case 12:
                                 iterator_1_1 = iterator_1.next();
                                 return [3 /*break*/, 1];
-                            case 14: return [3 /*break*/, 17];
-                            case 15:
-                                e_2_1 = _j.sent();
+                            case 13: return [3 /*break*/, 16];
+                            case 14:
+                                e_2_1 = _l.sent();
                                 e_2 = { error: e_2_1 };
-                                return [3 /*break*/, 17];
-                            case 16:
+                                return [3 /*break*/, 16];
+                            case 15:
                                 try {
-                                    if (iterator_1_1 && !iterator_1_1.done && (_g = iterator_1["return"])) _g.call(iterator_1);
+                                    if (iterator_1_1 && !iterator_1_1.done && (_h = iterator_1["return"])) _h.call(iterator_1);
                                 }
                                 finally { if (e_2) throw e_2.error; }
                                 return [7 /*endfinally*/];
-                            case 17: return [2 /*return*/];
+                            case 16: return [2 /*return*/];
                         }
                     });
                 });
             }
-            var eventLists, iteratorIdx, iterationsFinished, error, nextCallAllowed, iterator, workers;
-            return __generator(this, function (_h) {
-                switch (_h.label) {
+            var eventLists, blockInfos, iterator, iteratorIdx, iterationsFinished, error, nextCallAllowed, workers, blockInfo, exhausted;
+            return __generator(this, function (_j) {
+                switch (_j.label) {
                     case 0:
-                        eventLists = new Array(eventNameAndFilterList.length).fill(null).map(function () { return []; });
+                        eventLists = new Array(eventNameAndFilterList.length).fill(null).map(function () { return inOrderArrayProducer(); });
+                        blockInfos = inOrderArrayProducer();
+                        iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
                         iteratorIdx = 0;
                         iterationsFinished = 0;
                         error = null;
                         nextCallAllowed = 0;
-                        iterator = blockIterator(fromBlock, toBlock, maximumBlockRange);
                         workers = new Array(numConcurrency).fill(0).map(worker);
                         return [4 /*yield*/, Promise.all(workers)];
                     case 1:
-                        _h.sent(); // reject immediately if any of the promises reject 
+                        _j.sent(); // reject immediately if any of the promises reject 
+                        blockInfo = blockInfos.getLast();
+                        exhausted = iterator.isExhausted();
+                        if (timestampStop !== null) {
+                            if (blockInfo && blockInfo.timestamp && (blockInfo.timestamp <= timestampStop)) {
+                                exhausted = true;
+                            }
+                        }
+                        /* final progressCallback */
+                        if (progressCallback) {
+                            progressCallback(1, // progress
+                            eventLists.map(function (x) { return x.getNew(); }), blockInfo, // might be null
+                            true, // final
+                            // extra arguments if final == true
+                            exhausted, iterator.nextToBlock());
+                        }
                         if (error) {
                             throw new Error(error);
                         }
                         // join all list of events for each eventNameAndFilter
-                        return [2 /*return*/, eventLists.map(function (x) { return [].concat.apply([], x); })];
+                        return [2 /*return*/, eventLists.map(function (x) { return x.getAll(); })];
                 }
             });
         });

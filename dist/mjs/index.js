@@ -132,11 +132,11 @@ function sortMarketCreateEventsByExpirationDatetime(events) {
     });
 }
 function sortPositionChangeEventsByDatetime(events) {
-    // the first element will contain the market with the highest expiration date
+    // the first element will contain the event with the most recent date
     return events.sort(function (evtA, evtB) {
         // first try to sort by datetime
         if (evtA.returnValues.datetime !== evtB.returnValues.datetime) {
-            return evtA.returnValues.datetime - evtB.returnValues.datetime;
+            return evtB.returnValues.datetime - evtA.returnValues.datetime;
         }
         // then try to sort by id to get a deterministic dehavior
         if (evtB.id !== evtA.id) {
@@ -150,20 +150,10 @@ function sortPositionChangeEventsByDatetime(events) {
 function filterEventsByExpirationDatetime(events, expirationDatetimeStart, expirationDatetimeEnd) {
     // both ends (expirationDatetimeStart and expirationDatetimeEnd) included
     expirationDatetimeStart = expirationDatetimeStart || 0;
-    expirationDatetimeEnd = expirationDatetimeEnd || (expirationDatetimeMax + 1);
+    expirationDatetimeEnd = expirationDatetimeEnd || expirationDatetimeMax;
     return events.filter(function (evt) { return (evt.returnValues.expirationDatetime >= expirationDatetimeStart) && (evt.returnValues.expirationDatetime <= expirationDatetimeEnd); });
 }
-const dividers = [
-    0,
-    190 * 24 * 60 * 60,
-    // no QUATERLY support
-    45 * 24 * 60 * 60,
-    8 * 24 * 60 * 60,
-    36 * 60 * 60,
-    2 * 60 * 60,
-    15 * 60 // TODO SHORT_TERM: 6
-];
-const maxFuture = [
+const marketStartMaxIntervalBeforeExpiration = [
     0,
     730 * 24 * 60 * 60,
     190 * 24 * 60 * 60,
@@ -174,201 +164,138 @@ const maxFuture = [
     2 * 60 * 60, // TODO HOURLY: 5,
     //15 * 60// TODO SHORT_TERM: 6
 ];
-// default options
-const marketSearchOptions = {
-    //fromBlock, /* optional */
-    //toBlock /* optional */
-    //limitPerFetch: 20; // TODO add as option
-    filterFunc: function () { return true; },
-    filtersMax: 100,
-    marketInterval: null,
-    filterMarketCategories: null,
-    filterMarketIntervals: null
-};
-function marketSearchSetup(contractInfo, expirationDatetimeEnd, /* ether expirationDatetimeEnd OR blockTimestampLatest must be supplied */ blockTimestampLatest, toBlock, options) {
-    options = Object.assign({}, marketSearchOptions, options || {});
-    const filterMarketIntervals = options.filterMarketIntervals || marketIntervalsAll;
+function marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, { // options
+limitPerFetch = null, filterFunc = function () { return true; }, filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
+filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd = expirationDatetimeMax, } = {}) {
+    //  options = Object.assign({}, marketSearchOptions, options||{});
     return {
         contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
         eventName: contractInfo.contractMarketLister ? 'MarketCreateLister' : 'MarketCreate',
         fromBlock: contractInfo.blockCreatedMarketLister || contractInfo.blockCreatedMarkets,
         timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
-        marketIntervalsSorted: filterMarketIntervals,
-        expirationDatetimeEnd: expirationDatetimeEnd || expirationDatetimeMax,
-        // contains timestamps that are already included
-        filterMarketIntervalsTimestamp: filterMarketIntervals.map(function (marketInterval) {
-            // calculate (fake) last values to start with
-            const divider = dividers[marketInterval];
-            if (expirationDatetimeEnd) {
-                return (Math.floor(expirationDatetimeEnd / divider) + 1) * divider;
-            }
-            // TODO +1?
-            return (Math.floor((blockTimestampLatest + maxFuture[marketInterval]) / divider)) * divider;
-        }),
+        expirationDatetimeStart: expirationDatetimeStart,
+        expirationDatetimeEnd: expirationDatetimeEnd,
         toBlock: toBlock,
-        filterFunc: options.filterFunc,
-        filtersMax: options.filtersMax,
-        filterMarketCategories: options.filterMarketCategories,
+        //    limitPerFetch: limitPerFetch,
+        limitPerFetch: 7,
+        filterFunc: filterFunc,
+        filterMarketCategories: filterMarketCategories,
         filterMarketIntervals: filterMarketIntervals,
+        marketIntervalMin: Math.min.apply(null, filterMarketIntervals || marketIntervalsAll),
         eventsRemainingReady: [],
         eventsRemaining: [],
-        exhausted: false
+        exhaustedGetPastEvents: false,
+        exhausted: false,
     };
 }
-function getMarketCreateEventsIntern(marketSearch, expirationDatetimeStart, limit // TODO as part of options
-) {
-    expirationDatetimeStart = expirationDatetimeStart || marketSearch.timestampCreatedMarkets; // TODO
-    const contract = marketSearch.contract;
-    const eventName = marketSearch.eventName;
-    const marketIntervalsSorted = marketSearch.marketIntervalsSorted;
-    const filterMarketIntervalsTimestamp = marketSearch.filterMarketIntervalsTimestamp.slice(); // make a copy // TODO copy neccessary
-    const expirationDatetimeEnd = marketSearch.expirationDatetimeEnd;
-    const fromBlock = marketSearch.fromBlock;
-    const toBlock = marketSearch.toBlock;
-    const filtersMax = marketSearch.filtersMax;
-    const expirationDatetimeFilterList = [];
-    let maxValue, maxIndex;
-    while (expirationDatetimeFilterList.length < filtersMax) {
-        maxValue = filterMarketIntervalsTimestamp[0];
-        maxIndex = 0;
-        for (let i = 1; i < filterMarketIntervalsTimestamp.length; i++) {
-            if (filterMarketIntervalsTimestamp[i] > maxValue) {
-                maxIndex = i;
-                maxValue = filterMarketIntervalsTimestamp[i];
-            }
-        }
-        if (maxValue < expirationDatetimeStart) {
-            break;
-        }
-        const marketInterval = marketIntervalsSorted[maxIndex];
-        const divider = dividers[marketInterval];
-        const x = Math.floor(filterMarketIntervalsTimestamp[maxIndex] / divider) - 1; // TODO rename / remove floor
-        if (x >= 0) // TODO remove / should not be negative
-            expirationDatetimeFilterList.push((x << 8) + marketInterval); // TODO switch
-        filterMarketIntervalsTimestamp[maxIndex] = x * divider;
-    }
+function getMarketCreateEvents(marketSearch) {
+    marketSearch = Object.assign({}, marketSearch); // shallow copy
     /* if possible serve directly from cache */
-    if ((limit && (marketSearch.eventsRemainingReady.length >= limit)) ||
-        (expirationDatetimeFilterList.length == 0)) {
+    if ((marketSearch.limitPerFetch && (marketSearch.eventsRemainingReady.length >= marketSearch.limitPerFetch)) ||
+        marketSearch.exhaustedGetPastEvents) {
         //console.log('return from cache');
-        const events = marketSearch.eventsRemainingReady.slice(0, limit);
-        const eventsRemainingReady = marketSearch.eventsRemainingReady.slice(limit);
+        const events = marketSearch.eventsRemainingReady.slice(0, marketSearch.limitPerFetch);
+        // updated (copy of) marketSearch
+        marketSearch.eventsRemainingReady = marketSearch.eventsRemainingReady.slice(marketSearch.limitPerFetch);
+        marketSearch.exhausted = marketSearch.exhaustedGetPastEvents && (marketSearch.eventsRemainingReady.length == 0);
         return Promise.resolve([
             events,
-            // return updated marketSearch
-            Object.assign({}, marketSearch, {
-                eventsRemainingReady: eventsRemainingReady,
-                exhausted: (expirationDatetimeFilterList.length === 0) && (eventsRemainingReady.length === 0)
-            }),
+            marketSearch
         ]);
     }
-    //console.log('expirationDatetimeFilterList:', expirationDatetimeFilterList.map(function(filterValue){return '0x'+filterValue.toString(16);}).join(',\n'));
-    //console.log('expirationDatetimeFilterList.length:', expirationDatetimeFilterList.length);
-    const filter = {
-        expirationDatetimeFilter: expirationDatetimeFilterList
-    };
-    if (marketSearch.filterMarketCategories)
+    const filter = {};
+    if (marketSearch.filterMarketIntervals) {
+        filter.marketInterval = marketSearch.filterMarketIntervals;
+    }
+    if (marketSearch.filterMarketCategories) {
         filter.marketCategory = marketSearch.filterMarketCategories;
-    return getPastEvents(contract, fromBlock, // fromBlock
-    toBlock, // toBlock
+    }
+    let events = [];
+    return getPastEvents(marketSearch.contract, marketSearch.fromBlock, // fromBlock
+    marketSearch.toBlock, // toBlock
     [
         [
-            eventName,
+            marketSearch.eventName,
             filter
         ]
-    ])
-        .then(function (eventsNewList) {
-        const eventsNew = eventsNewList[0]; // result from the first (and only) eventNameAndFilter
-        const eventsSorted = sortMarketCreateEventsByExpirationDatetime(filterEventsByExpirationDatetime(eventsNew.concat(marketSearch.eventsRemainingReady, marketSearch.eventsRemaining), expirationDatetimeStart, //expirationDatetimeStart
-        expirationDatetimeEnd //expirationDatetimeEnd
-        ));
-        // TODO we can only return values where we are sure that they are in order
-        const timestamp = Math.max.apply(null, filterMarketIntervalsTimestamp);
-        let eventsRemainingReady = [];
-        let eventsRemaining = [];
-        let events = [];
-        for (let idx = 0; idx < eventsSorted.length; idx++) {
-            const evt = eventsSorted[idx];
-            if (evt.returnValues.expirationDatetime < timestamp) {
-                // TODO we can only return values where we are sure that they are in order
-                eventsRemaining.push(evt);
+    ], {
+        timestampStop: 0,
+        progressCallback: function (progress, eventsList, blockInfo, final, exhausted, nextToBlock) {
+            const eventsNew = filterEventsByExpirationDatetime(eventsList[0], // result from the first (and only) eventNameAndFilter
+            marketSearch.expirationDatetimeStart, //expirationDatetimeStart
+            marketSearch.expirationDatetimeEnd //expirationDatetimeEnd
+            );
+            let eventsReady;
+            if (final && exhausted) {
+                // we can savely just add all events
+                eventsReady = marketSearch.eventsRemaining.concat(eventsNew);
+                marketSearch.eventsRemaining = [];
+            }
+            else if (blockInfo && blockInfo.timestamp) {
+                // blockInfo might be null only if eventsList does not contain any events
+                eventsReady = [];
+                const eventsRemainingOld = marketSearch.eventsRemaining;
+                marketSearch.eventsRemaining = [];
+                // only return values where we are sure that they are in order
+                const timestamp = blockInfo.timestamp + marketStartMaxIntervalBeforeExpiration[marketSearch.marketIntervalMin];
+                for (const evt of eventsRemainingOld) {
+                    if (evt.returnValues.expirationDatetime > timestamp) {
+                        // we can only return values where we are sure that they are in order
+                        eventsReady.push(evt);
+                    }
+                    else {
+                        marketSearch.eventsRemaining.push(evt);
+                    }
+                }
+                for (const evt of eventsNew) {
+                    if (evt.returnValues.expirationDatetime > timestamp) {
+                        // we can only return values where we are sure that they are in order
+                        eventsReady.push(evt);
+                    }
+                    else {
+                        marketSearch.eventsRemaining.push(evt);
+                    }
+                }
             }
             else {
-                events.push(evt);
+                eventsReady = [];
             }
+            const eventsReadySorted = sortMarketCreateEventsByExpirationDatetime(eventsReady);
+            if (marketSearch.limitPerFetch) {
+                marketSearch.eventsRemainingReady = marketSearch.eventsRemainingReady.concat(eventsReadySorted);
+                if (marketSearch.limitPerFetch > events.length) {
+                    const maxElementsToAdd = marketSearch.limitPerFetch - events.length;
+                    events = events.concat(marketSearch.eventsRemainingReady.slice(0, maxElementsToAdd));
+                    marketSearch.eventsRemainingReady = marketSearch.eventsRemainingReady.slice(maxElementsToAdd);
+                }
+            }
+            else {
+                // no limit so just add all events
+                events = events.concat(eventsReadySorted);
+            }
+            if (final) {
+                // updated (copy of) marketSearch
+                marketSearch.toBlock = nextToBlock;
+                marketSearch.exhaustedGetPastEvents = exhausted;
+                marketSearch.exhausted = marketSearch.exhaustedGetPastEvents && (marketSearch.eventsRemainingReady.length == 0);
+            }
+            if ((marketSearch.limitPerFetch) && (marketSearch.limitPerFetch <= events.length)) {
+                return false; // stop
+            }
+            return true; // do not stop getPastEvents()
         }
-        //maxValue, // TODO
-        //console.log('limit', limit);
-        if (limit) {
-            eventsRemainingReady = events.slice(limit);
-            events = events.slice(0, limit);
-            //console.log('cache remain:', eventsRemainingReady.length, 'limit', limit);
-        }
+    })
+        .then(function ( /*eventsList*/) {
         return ([
             events,
-            // return updated marketSearch
-            Object.assign({}, marketSearch, {
-                filterMarketIntervalsTimestamp: filterMarketIntervalsTimestamp,
-                eventsRemainingReady: eventsRemainingReady,
-                eventsRemaining: eventsRemaining,
-                exhausted: (expirationDatetimeFilterList.length < filtersMax) && (eventsRemainingReady.length === 0)
-            })
+            marketSearch
         ]);
     });
 }
-/* search for market creation events until (at least) one of the following points is true:
- *
- * limit is reached (if limit is given)
- * search is exhausted (expirationDatetimeStart or blockCreated is reached)
- * TODO
- */
-function getMarketCreateEvents(marketSearch, expirationDatetimeStart, limit // TODO as part of options
-) {
-    let eventsAll = [];
-    function loop() {
-        return getMarketCreateEventsIntern(marketSearch, expirationDatetimeStart, limit)
-            .then(function (results) {
-            const events = results[0];
-            marketSearch = results[1];
-            eventsAll = eventsAll.concat(events);
-            if (marketSearch.exhausted || (eventsAll.length > 0)) {
-                return [eventsAll, marketSearch];
-            }
-            return loop();
-        });
-    }
-    return loop();
-}
-function getMarketDataList(web3, contractAddr, userAddr, expirationDatetime, options) {
-    const limitPerFetch = 20; // TODO
+function getMarketDataList(web3, contractAddr, userAddr, options) {
     const contract = new web3.eth.Contract(digioptionsMarketsAbi(), contractAddr);
     let marketDataListAll = [];
     let marketSearch;
-    function marketLoop() {
-        return getMarketCreateEvents(marketSearch, expirationDatetime, /* expirationDatetimeStart */ limitPerFetch //limit /* optional */
-        )
-            .then(function (result) {
-            const events = result[0];
-            marketSearch = result[1]; //marketSearchNew
-            //console.log('events', events);
-            const marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
-            //console.log('marketKeys', contractAddr, marketKeys);
-            const contract = marketSearch.contract;
-            if (marketKeys.length == 0) {
-                //console.log('TODO handle me 1'); // TODO handle
-                return [];
-            }
-            return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
-                .call({});
-        })
-            .then(function (marketDataList) {
-            marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
-            if (marketSearch.exhausted) { // TODO
-                return marketDataListAll;
-            }
-            return marketLoop();
-        });
-    }
     let blockTimestampLatest;
     let toBlock;
     return web3.eth.getBlock('latest')
@@ -381,12 +308,29 @@ function getMarketDataList(web3, contractAddr, userAddr, expirationDatetime, opt
         return parseContractInfo(web3, contractAddr, contractInfo);
     })
         .then(function (contractInfo) {
-        marketSearch = marketSearchSetup(contractInfo, null, //expirationDatetimeEnd,
-        blockTimestampLatest, toBlock, options);
+        marketSearch = marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, options);
         return true; // dummy value
     })
         .then(function () {
-        return marketLoop();
+        return getMarketCreateEvents(marketSearch);
+    })
+        .then(function (result) {
+        const events = result[0];
+        marketSearch = result[1]; //marketSearchNew
+        //console.log('events', events);
+        const marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
+        //console.log('marketKeys', contractAddr, marketKeys);
+        const contract = marketSearch.contract;
+        if (marketKeys.length == 0) {
+            //console.log('TODO handle me 1'); // TODO handle
+            return [];
+        }
+        return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
+            .call({});
+    })
+        .then(function (marketDataList) {
+        marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
+        return marketDataListAll;
     });
 }
 /* similar to factsigner's factHash() but with additional data to hash */
@@ -487,5 +431,5 @@ const versionMarkets = {
     minor: 53,
     bugfix: 0
 };
-export { digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
+export { marketStartMaxIntervalBeforeExpiration, digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
 //# sourceMappingURL=index.js.map

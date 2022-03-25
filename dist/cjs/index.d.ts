@@ -1,3 +1,4 @@
+export const marketStartMaxIntervalBeforeExpiration: number[];
 import digioptionsMarketsAbi from "./digioptions_markets_abi";
 import digioptionsMarketListerAbi from "./digioptions_market_lister_abi";
 export function getContractInfo(web3: any, contractAddr: any): any;
@@ -16,25 +17,33 @@ export function marketListerInfoToMarketListerDescription(web3: any, contractLis
 export function sortMarketCreateEventsByExpirationDatetime(events: any): any;
 export function sortPositionChangeEventsByDatetime(events: any): any;
 export function filterEventsByExpirationDatetime(events: any, expirationDatetimeStart: any, expirationDatetimeEnd: any): any;
-export function marketSearchSetup(contractInfo: any, expirationDatetimeEnd: any, blockTimestampLatest: any, toBlock: any, options: any): {
+export function marketSearchSetup(contractInfo: any, blockTimestampLatest: any, toBlock: any, { limitPerFetch, filterFunc, filterMarketCategories, filterMarketIntervals, expirationDatetimeStart, expirationDatetimeEnd, }?: {
+    limitPerFetch?: null | undefined;
+    filterFunc?: (() => true) | undefined;
+    filterMarketCategories?: null | undefined;
+    filterMarketIntervals?: null | undefined;
+    expirationDatetimeStart?: number | undefined;
+    expirationDatetimeEnd?: number | undefined;
+}): {
     contract: any;
     eventName: string;
     fromBlock: any;
     timestampCreatedMarkets: any;
-    marketIntervalsSorted: any;
-    expirationDatetimeEnd: any;
-    filterMarketIntervalsTimestamp: any;
+    expirationDatetimeStart: number;
+    expirationDatetimeEnd: number;
     toBlock: any;
-    filterFunc: any;
-    filtersMax: any;
-    filterMarketCategories: any;
-    filterMarketIntervals: any;
+    limitPerFetch: number;
+    filterFunc: () => true;
+    filterMarketCategories: null;
+    filterMarketIntervals: null;
+    marketIntervalMin: number;
     eventsRemainingReady: never[];
     eventsRemaining: never[];
+    exhaustedGetPastEvents: boolean;
     exhausted: boolean;
 };
-export function getMarketCreateEvents(marketSearch: any, expirationDatetimeStart: any, limit: any): any;
-export function getMarketDataList(web3: any, contractAddr: any, userAddr: any, expirationDatetime: any, options: any): any;
+export function getMarketCreateEvents(marketSearch: any): Promise<any[]>;
+export function getMarketDataList(web3: any, contractAddr: any, userAddr: any, options: any): any;
 import { getPastEvents } from "./events";
 export function marketHash(marketBaseData: any): string | null;
 export function orderOfferToHash(order: any): string | null;
