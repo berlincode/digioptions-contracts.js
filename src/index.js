@@ -232,8 +232,7 @@ function marketSearchSetup(
     expirationDatetimeEnd: expirationDatetimeEnd,
 
     toBlock: toBlock,
-//    limitPerFetch: limitPerFetch,
-    limitPerFetch: 7, // TODO remove
+    limitPerFetch: limitPerFetch,
 
     filterFunc: filterFunc,
     filterMarketCategories: filterMarketCategories,
