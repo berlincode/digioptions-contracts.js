@@ -4,6 +4,7 @@
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "MIT",
+  "main": "dist/cjs/index.js",
   "author": {
     "name": "digioptions.com",
     "url": "https://www.digioptions.com"
