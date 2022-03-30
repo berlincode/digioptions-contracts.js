@@ -32,7 +32,7 @@ export function marketSearchSetup(contractInfo: any, blockTimestampLatest: any, 
     expirationDatetimeStart: number;
     expirationDatetimeEnd: number;
     toBlock: any;
-    limitPerFetch: number;
+    limitPerFetch: null;
     filterFunc: () => true;
     filterMarketCategories: null;
     filterMarketIntervals: null;
