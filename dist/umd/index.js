@@ -43,15 +43,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./events", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
+        define(["require", "exports", "web3-utils", "factsigner", "eth-lib/lib/account", "./constants", "./constants", "./events", "./digioptions_markets_abi", "./digioptions_market_lister_abi"], factory);
     }
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
-    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = void 0;
+    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = exports.constants = void 0;
     var web3Utils = __importStar(require("web3-utils"));
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
+    var constants = __importStar(require("./constants"));
+    exports.constants = constants;
     var constants_1 = require("./constants");
     var events_1 = require("./events");
     exports.getPastEvents = events_1.getPastEvents;

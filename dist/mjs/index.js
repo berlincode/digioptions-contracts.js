@@ -3,6 +3,7 @@
 import * as web3Utils from 'web3-utils';
 import factsigner from 'factsigner';
 import * as ethLibAccount from 'eth-lib/lib/account';
+import * as constants from './constants';
 import { contractType, expirationDatetimeMax, marketIntervalsAll } from './constants';
 import { getPastEvents } from './events';
 import digioptionsMarketsAbi from './digioptions_markets_abi';
@@ -430,5 +431,5 @@ const versionMarkets = {
     minor: 53,
     bugfix: 0
 };
-export { marketStartMaxIntervalBeforeExpiration, digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
+export { constants, marketStartMaxIntervalBeforeExpiration, digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
 //# sourceMappingURL=index.js.map

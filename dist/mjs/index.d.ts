@@ -1,3 +1,4 @@
+import * as constants from "./constants";
 export const marketStartMaxIntervalBeforeExpiration: number[];
 import digioptionsMarketsAbi from "./digioptions_markets_abi";
 import digioptionsMarketListerAbi from "./digioptions_market_lister_abi";
@@ -71,4 +72,4 @@ export namespace versionMarkets {
     const bugfix_1: number;
     export { bugfix_1 as bugfix };
 }
-export { digioptionsMarketsAbi, digioptionsMarketListerAbi, getPastEvents };
+export { constants, digioptionsMarketsAbi, digioptionsMarketListerAbi, getPastEvents };
