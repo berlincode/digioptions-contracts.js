@@ -21,7 +21,7 @@
     "watch-mjs": "tsc -p tsconfig-mjs.json --watch",
     "watch-umd": "tsc -p tsconfig-umd.json --watch",
     "test": "mocha --bail test/test_*.js && cd coverage && istanbul report text > ../test/coverage/coverage.txt",
-    "postinstall": "patch-package"
+    "patch": "patch-package"
   },
   "files": [
     "artifacts/*.json",
@@ -44,7 +44,6 @@
   ],
   "dependencies": {
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
-    "patch-package": "^6.2.1",
     "web3": "~1.7.0"
   },
   "devDependencies": {
@@ -58,6 +57,7 @@
     "ganache-core": "^2.11.0",
     "istanbul": "^0.4.5",
     "open-cli": "^7.0.0",
+    "patch-package": "^6.2.1",
     "mocha": "^9.0.0",
     "shx": "^0.3.2",
     "solc": "~0.8.12",
