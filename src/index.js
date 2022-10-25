@@ -7,7 +7,7 @@ import * as ethLibAccount from 'eth-lib/lib/account';
 
 import * as constants from './constants';
 import {contractType, expirationDatetimeMax, marketIntervalsAll} from './constants';
-import {getPastEvents} from './events';
+import {getPastEvents, maximumBlockRangeDefault} from './events';
 import digioptionsMarketsAbi from './digioptions_markets_abi';
 import digioptionsMarketListerAbi from './digioptions_market_lister_abi';
 
@@ -219,6 +219,7 @@ function marketSearchSetup(
     filterMarketIntervals = null,
     expirationDatetimeStart = 0,
     expirationDatetimeEnd = expirationDatetimeMax,
+    maximumBlockRange = maximumBlockRangeDefault,
   } = {}
 ){
 //  options = Object.assign({}, marketSearchOptions, options||{});
@@ -231,6 +232,7 @@ function marketSearchSetup(
     timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
     expirationDatetimeStart: expirationDatetimeStart,
     expirationDatetimeEnd: expirationDatetimeEnd,
+    maximumBlockRange: maximumBlockRange,
 
     toBlock: toBlock,
     limitPerFetch: limitPerFetch,
@@ -294,6 +296,7 @@ function getMarketCreateEvents(
       ]
     ],
     { // options
+      maximumBlockRange: marketSearch.maximumBlockRange,
       timestampStop: 0, // force getBlock() so that we receive timestamps
       progressCallback: function(progress, eventsList, blockInfo, final, exhausted, nextToBlock){
 
@@ -565,6 +568,7 @@ const versionMarkets = {
 };
 
 export {
+  parseContractInfo,
   constants,
   marketStartMaxIntervalBeforeExpiration,
   digioptionsMarketsAbi,
