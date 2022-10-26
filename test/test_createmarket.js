@@ -658,24 +658,16 @@ describe('test createMarket and getMarketDataList', function() {
     const marketDataList0 = await digioptionsContracts.getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
-      addrZero,
-      {
-        // options
-        filterFunc: function(marketData){return ! marketData.testMarket;}
-      }
+      addrZero
     );
-    assert.equal(marketDataList0.length, 3);
+    assert.equal(marketDataList0.filter(function(marketData){return ! marketData.testMarket;}).length, 3);
 
     const marketDataList1 = await digioptionsContracts.getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
-      addrZero,
-      {
-        // options
-        filterFunc: function(marketData){return ! marketData.testMarket;}
-      }
+      addrZero
     );
-    assert.equal(marketDataList1.length, 2);
+    assert.equal(marketDataList1.filter(function(marketData){return ! marketData.testMarket;}).length, 2);
   });
 
   it('register more (fake) signerAdresses at market lister contract', async function() {

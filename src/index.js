@@ -214,7 +214,6 @@ function marketSearchSetup(
   toBlock,
   { // options
     limitPerFetch = null,
-    filterFunc = function(){return true;},
     filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
     filterMarketIntervals = null,
     expirationDatetimeStart = 0,
@@ -237,7 +236,6 @@ function marketSearchSetup(
     toBlock: toBlock,
     limitPerFetch: limitPerFetch,
 
-    filterFunc: filterFunc,
     filterMarketCategories: filterMarketCategories,
     filterMarketIntervals: filterMarketIntervals,
 
@@ -415,21 +413,17 @@ function getMarketDataList(web3, contractAddr, userAddr, options){
     })
     .then(function(result) {
       const events = result[0];
-      marketSearch = result[1]; //marketSearchNew
 
-      //console.log('events', events);
       const marketKeys = events.map(function(evt){return evt.returnValues.marketKey;});
-      //console.log('marketKeys', contractAddr, marketKeys);
       const contract = marketSearch.contract;
       if (marketKeys.length == 0){
-        //console.log('TODO handle me 1'); // TODO handle
         return [];
       }
       return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
         .call({});
     })
     .then(function(marketDataList) {
-      marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
+      marketDataListAll = marketDataListAll.concat(marketDataList);
       return marketDataListAll;
     });
 }
