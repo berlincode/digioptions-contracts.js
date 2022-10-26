@@ -32,6 +32,34 @@ const logger = {
   }
 };
 
+async function getMarketDataList(web3, contractAddr, userAddr, options){
+  const contract = new web3.eth.Contract(digioptionsContracts.digioptionsMarketsAbi(), contractAddr);
+
+  const blockHeader = await web3.eth.getBlock('latest');
+
+  const contractInfo = await digioptionsContracts.parseContractInfo(
+    web3,
+    contractAddr,
+    await contract.methods.getContractInfo().call()
+  );
+
+  const marketSearch = digioptionsContracts.marketSearchSetup(
+    contractInfo,
+    blockHeader.timestamp,
+    blockHeader.number,
+    options
+  );
+
+  const result = await digioptionsContracts.getMarketCreateEvents(marketSearch);
+  const events = result[0];
+
+  const marketKeys = events.map(function(evt){return evt.returnValues.marketKey;});
+  if (marketKeys.length == 0){
+    return [];
+  }
+  return await marketSearch.contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys).call({});
+}
+
 async function setup(){
   var dateStart = new Date(0); // The 0 is the key, which sets the date to the epoch
   dateStart.setUTCSeconds(epochSecondsStart);
@@ -199,7 +227,7 @@ function loadBeforeAndAfter(self) {
 }
 
 
-describe('test createMarket and getMarketDataList', function() {
+describe('test createMarket', function() {
   this.timeout(120*1000);
 
   loadBeforeAndAfter(this);
@@ -367,14 +395,14 @@ describe('test createMarket and getMarketDataList', function() {
 
   it('check that no market are created', async function() {
     // should contain 0 markets
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
     );
     assert.equal(marketDataList0.length, 0);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -425,7 +453,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(parseInt(marketData.marketBaseData.expirationDatetime), this.marketBaseData0.expirationDatetime); /* market exists if expirationDatetime != 0) */
 
     // should contain 1 market
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
@@ -433,7 +461,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(marketDataList0.length, 1);
     assert.equal(marketDataList0[0].marketHash, this.marketHash0);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -461,7 +489,7 @@ describe('test createMarket and getMarketDataList', function() {
 
     // should contain 2 markets
 
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
@@ -470,7 +498,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(marketDataList0[0].marketHash, this.marketHash0);
     assert.equal(marketDataList0[1].marketHash, this.marketHash1);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -500,7 +528,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.notEqual(marketData.marketBaseData.expirationDatetime, 0); /* market exists if expirationDatetime != 0) */
 
     // should contain 3 markets
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
@@ -510,7 +538,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(marketDataList0[1].marketHash, this.marketHash0);
     assert.equal(marketDataList0[2].marketHash, this.marketHash1);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -538,14 +566,14 @@ describe('test createMarket and getMarketDataList', function() {
     //);
 
     // should (still) contain 3 markets
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
     );
     assert.equal(marketDataList0.length, 3);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -580,7 +608,7 @@ describe('test createMarket and getMarketDataList', function() {
   */
 
   it('should still contain 3 markets', async function() {
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
@@ -590,7 +618,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(marketDataList0[1].marketHash, this.marketHash0);
     assert.equal(marketDataList0[2].marketHash, this.marketHash1);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -602,7 +630,7 @@ describe('test createMarket and getMarketDataList', function() {
   });
 
   it('get markets with expiration (should return 2 markets)', async function() {
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero,
@@ -614,7 +642,7 @@ describe('test createMarket and getMarketDataList', function() {
     assert.equal(marketDataList0[0].marketHash, this.marketHash2);
     assert.equal(marketDataList0[1].marketHash, this.marketHash0);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero,
@@ -655,14 +683,14 @@ describe('test createMarket and getMarketDataList', function() {
 
 
   it('should contain 2 (marketLister) / 3 (markets) non-testMarkets', async function() {
-    const marketDataList0 = await digioptionsContracts.getMarketDataList(
+    const marketDataList0 = await getMarketDataList(
       this.web3,
       this.marketsContract.options.address,
       addrZero
     );
     assert.equal(marketDataList0.filter(function(marketData){return ! marketData.testMarket;}).length, 3);
 
-    const marketDataList1 = await digioptionsContracts.getMarketDataList(
+    const marketDataList1 = await getMarketDataList(
       this.web3,
       this.marketListerContract.options.address,
       addrZero

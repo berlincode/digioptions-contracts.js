@@ -378,57 +378,6 @@ function getMarketCreateEvents(
     });
 }
 
-function getMarketDataList(web3, contractAddr, userAddr, options){
-  const contract = new web3.eth.Contract(digioptionsMarketsAbi(), contractAddr);
-  let marketDataListAll = [];
-  let marketSearch;
-
-  let blockTimestampLatest;
-  let toBlock;
-  return web3.eth.getBlock('latest')
-    .then(function(blockHeader) {
-      blockTimestampLatest = blockHeader.timestamp;
-      toBlock = blockHeader.number;
-      return contract.methods.getContractInfo().call();
-    })
-    .then(function(contractInfo) {
-      return parseContractInfo(
-        web3,
-        contractAddr,
-        contractInfo
-      );
-    })
-    .then(function(contractInfo) {
-
-      marketSearch = marketSearchSetup(
-        contractInfo,
-        blockTimestampLatest,
-        toBlock,
-        options
-      );
-      return true; // dummy value
-    })
-    .then(function() {
-      return getMarketCreateEvents(marketSearch);
-    })
-    .then(function(result) {
-      const events = result[0];
-
-      const marketKeys = events.map(function(evt){return evt.returnValues.marketKey;});
-      const contract = marketSearch.contract;
-      if (marketKeys.length == 0){
-        return [];
-      }
-      return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
-        .call({});
-    })
-    .then(function(marketDataList) {
-      marketDataListAll = marketDataListAll.concat(marketDataList);
-      return marketDataListAll;
-    });
-}
-
-
 /* similar to factsigner's factHash() but with additional data to hash */
 function marketHash(marketBaseData){
 
@@ -574,7 +523,6 @@ export {
   filterEventsByExpirationDatetime,
   marketSearchSetup,
   getMarketCreateEvents,
-  getMarketDataList,
   getPastEvents,
   marketHash,
   orderOfferToHash,
