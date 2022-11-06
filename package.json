@@ -1,6 +1,6 @@
 {
   "name": "digioptions-contracts.js",
-  "version": "0.58.0",
+  "version": "0.59.0",
   "description": "solidity contract used by the ethereum based user-driven option markets digioptions.com",
   "homepage": "https://github.com/berlincode/digioptions-contracts.js",
   "license": "MIT",
@@ -44,21 +44,21 @@
   ],
   "dependencies": {
     "factsigner": "git+https://github.com/berlincode/factsigner.git",
-    "web3": "~1.7.0"
+    "web3": "~1.8.0"
   },
   "devDependencies": {
     "@0x/sol-compiler": "^4.0.0",
     "@0x/sol-coverage": "^4.0.0",
     "@0x/sol-profiler": "^4.0.0",
     "@0x/sol-trace": "^3.0.0",
-    "@openzeppelin/contracts": "~4.5.0",
+    "@openzeppelin/contracts": "~4.7.0",
     "eslint": "^8.4.0",
     "ethlint": "^1.2.5",
-    "ganache-core": "^2.11.0",
+    "ganache": "^7.5.0",
     "istanbul": "^0.4.5",
     "open-cli": "^7.0.0",
     "patch-package": "^6.2.1",
-    "mocha": "^9.0.0",
+    "mocha": "^10.0.0",
     "shx": "^0.3.2",
     "solc": "~0.8.12",
     "typescript": "^4.5.4"

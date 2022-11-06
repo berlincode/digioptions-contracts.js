@@ -6,7 +6,7 @@ const path = require('path');
 
 const Web3 = require('web3');
 //const web3Utils = require('web3-utils');
-const ganache = require('ganache-core');
+const ganache = require('ganache');
 
 const ProviderEngine = require('web3-provider-engine');
 const RpcSubprovider = require('web3-provider-engine/subproviders/rpc.js');

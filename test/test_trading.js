@@ -62,12 +62,12 @@ const marketBaseData = {
 };
 const factHash = factsigner.factHash(marketBaseData);
 const marketHash = digioptionsContracts.marketHash(marketBaseData);
-const trader0BalanceStart = web3Utils.toWei(web3Utils.toBN(1000), 'ether'); // TODO simplify - use string
-const trader1BalanceStart = web3Utils.toWei(web3Utils.toBN(1000), 'ether');
-const contractOwnerBalanceStart = web3Utils.toWei(web3Utils.toBN(1000), 'ether');
-const marketCreatorBalanceStart = web3Utils.toWei(web3Utils.toBN(1000), 'ether');
-const marketFeeTaker0BalanceStart = web3Utils.toWei(web3Utils.toBN(0), 'ether');
-const marketFeeTaker1BalanceStart = web3Utils.toWei(web3Utils.toBN(0), 'ether');
+const trader0BalanceStart = '0x3635c9adc5dea00000'; //web3Utils.toWei(web3Utils.toBN(1000), 'ether');
+const trader1BalanceStart = '0x3635c9adc5dea00000'; //web3Utils.toWei(web3Utils.toBN(1000), 'ether');
+const contractOwnerBalanceStart = '0x3635c9adc5dea00000'; //web3Utils.toWei(web3Utils.toBN(1000), 'ether');
+const marketCreatorBalanceStart = '0x3635c9adc5dea00000'; //web3Utils.toWei(web3Utils.toBN(1000), 'ether');
+const marketFeeTaker0BalanceStart = '0x0'; //web3Utils.toWei(web3Utils.toBN(0), 'ether');
+const marketFeeTaker1BalanceStart = '0x0'; //web3Utils.toWei(web3Utils.toBN(0), 'ether');
 
 const trader0LiquidityStart = web3Utils.toWei(web3Utils.toBN(100), 'ether');
 const trader1LiquidityStart = web3Utils.toWei(web3Utils.toBN(100), 'ether');

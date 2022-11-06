@@ -72,12 +72,12 @@ async function setup(){
       {
         index: 0,
         secretKey: '0x6d535de64aed7dc208ef828a09b52585f6e4a14ca9966ef54df663e9807328a0', // 0x0916A531dBD87C820531de8805ddE753F3e4b8f7
-        balance: web3Utils.toWei('1000', 'ether'),
+        balance: '0x3635c9adc5dea00000', //web3Utils.toWei('1000', 'ether'),
       },
       {
         index: 1,
         secretKey: '0xd71d7ec04c0ad2d6e706fc592a05c901f9161c8cc7c7879a29a76dd48ef795ae',
-        balance: web3Utils.toWei('1000', 'ether'),
+        balance: '0x3635c9adc5dea00000', //web3Utils.toWei('1000', 'ether'),
       },
     ],
     time: dateStart, // set time of first block
