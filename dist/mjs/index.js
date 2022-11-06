@@ -5,7 +5,7 @@ import factsigner from 'factsigner';
 import * as ethLibAccount from 'eth-lib/lib/account';
 import * as constants from './constants';
 import { contractType, expirationDatetimeMax, marketIntervalsAll } from './constants';
-import { getPastEvents } from './events';
+import { getPastEvents, maximumBlockRangeDefault } from './events';
 import digioptionsMarketsAbi from './digioptions_markets_abi';
 import digioptionsMarketListerAbi from './digioptions_market_lister_abi';
 /* returns a promise */
@@ -166,8 +166,8 @@ const marketStartMaxIntervalBeforeExpiration = [
     //15 * 60// TODO SHORT_TERM: 6
 ];
 function marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, { // options
-limitPerFetch = null, filterFunc = function () { return true; }, filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
-filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd = expirationDatetimeMax, } = {}) {
+limitPerFetch = null, filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
+filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd = expirationDatetimeMax, maximumBlockRange = maximumBlockRangeDefault, } = {}) {
     //  options = Object.assign({}, marketSearchOptions, options||{});
     return {
         contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
@@ -176,9 +176,9 @@ filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd
         timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
         expirationDatetimeStart: expirationDatetimeStart,
         expirationDatetimeEnd: expirationDatetimeEnd,
+        maximumBlockRange: maximumBlockRange,
         toBlock: toBlock,
         limitPerFetch: limitPerFetch,
-        filterFunc: filterFunc,
         filterMarketCategories: filterMarketCategories,
         filterMarketIntervals: filterMarketIntervals,
         marketIntervalMin: Math.min.apply(null, filterMarketIntervals || marketIntervalsAll),
@@ -219,6 +219,7 @@ function getMarketCreateEvents(marketSearch) {
             filter
         ]
     ], {
+        maximumBlockRange: marketSearch.maximumBlockRange,
         timestampStop: 0,
         progressCallback: function (progress, eventsList, blockInfo, final, exhausted, nextToBlock) {
             const eventsNew = filterEventsByExpirationDatetime(eventsList[0], // result from the first (and only) eventNameAndFilter
@@ -290,47 +291,6 @@ function getMarketCreateEvents(marketSearch) {
             events,
             marketSearch
         ]);
-    });
-}
-function getMarketDataList(web3, contractAddr, userAddr, options) {
-    const contract = new web3.eth.Contract(digioptionsMarketsAbi(), contractAddr);
-    let marketDataListAll = [];
-    let marketSearch;
-    let blockTimestampLatest;
-    let toBlock;
-    return web3.eth.getBlock('latest')
-        .then(function (blockHeader) {
-        blockTimestampLatest = blockHeader.timestamp;
-        toBlock = blockHeader.number;
-        return contract.methods.getContractInfo().call();
-    })
-        .then(function (contractInfo) {
-        return parseContractInfo(web3, contractAddr, contractInfo);
-    })
-        .then(function (contractInfo) {
-        marketSearch = marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, options);
-        return true; // dummy value
-    })
-        .then(function () {
-        return getMarketCreateEvents(marketSearch);
-    })
-        .then(function (result) {
-        const events = result[0];
-        marketSearch = result[1]; //marketSearchNew
-        //console.log('events', events);
-        const marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
-        //console.log('marketKeys', contractAddr, marketKeys);
-        const contract = marketSearch.contract;
-        if (marketKeys.length == 0) {
-            //console.log('TODO handle me 1'); // TODO handle
-            return [];
-        }
-        return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
-            .call({});
-    })
-        .then(function (marketDataList) {
-        marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
-        return marketDataListAll;
     });
 }
 /* similar to factsigner's factHash() but with additional data to hash */
@@ -431,5 +391,5 @@ const versionMarkets = {
     minor: 53,
     bugfix: 0
 };
-export { constants, marketStartMaxIntervalBeforeExpiration, digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getMarketDataList, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
+export { parseContractInfo, constants, marketStartMaxIntervalBeforeExpiration, digioptionsMarketsAbi, digioptionsMarketListerAbi, getContractInfo, marketListerInfoToMarketListerDescription, sortMarketCreateEventsByExpirationDatetime, sortPositionChangeEventsByDatetime, filterEventsByExpirationDatetime, marketSearchSetup, getMarketCreateEvents, getPastEvents, marketHash, orderOfferToHash, signOrderOffer, versionFromInt, versionToString, versionMarketLister, versionMarkets, };
 //# sourceMappingURL=index.js.map

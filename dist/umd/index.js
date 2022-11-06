@@ -48,7 +48,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
-    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = exports.constants = void 0;
+    exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = exports.constants = exports.parseContractInfo = void 0;
     var web3Utils = __importStar(require("web3-utils"));
     var factsigner_1 = __importDefault(require("factsigner"));
     var ethLibAccount = __importStar(require("eth-lib/lib/account"));
@@ -119,6 +119,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             };
         });
     }
+    exports.parseContractInfo = parseContractInfo;
     /* returns a promise */
     function getContractInfo(web3, contractAddr) {
         // use any contract abi for calling getContractInfo()
@@ -228,9 +229,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         //  options = Object.assign({}, marketSearchOptions, options||{});
         var _b = _a === void 0 ? {} : _a, // options
         _c = _b.limitPerFetch, // options
-        limitPerFetch = _c === void 0 ? null : _c, _d = _b.filterFunc, filterFunc = _d === void 0 ? function () { return true; } : _d, _e = _b.filterMarketCategories, filterMarketCategories = _e === void 0 ? null : _e, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
-        _f = _b.filterMarketIntervals, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
-        filterMarketIntervals = _f === void 0 ? null : _f, _g = _b.expirationDatetimeStart, expirationDatetimeStart = _g === void 0 ? 0 : _g, _h = _b.expirationDatetimeEnd, expirationDatetimeEnd = _h === void 0 ? constants_1.expirationDatetimeMax : _h;
+        limitPerFetch = _c === void 0 ? null : _c, _d = _b.filterMarketCategories, filterMarketCategories = _d === void 0 ? null : _d, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
+        _e = _b.filterMarketIntervals, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
+        filterMarketIntervals = _e === void 0 ? null : _e, _f = _b.expirationDatetimeStart, expirationDatetimeStart = _f === void 0 ? 0 : _f, _g = _b.expirationDatetimeEnd, expirationDatetimeEnd = _g === void 0 ? constants_1.expirationDatetimeMax : _g, _h = _b.maximumBlockRange, maximumBlockRange = _h === void 0 ? events_1.maximumBlockRangeDefault : _h;
         return {
             contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
             eventName: contractInfo.contractMarketLister ? 'MarketCreateLister' : 'MarketCreate',
@@ -238,9 +239,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
             expirationDatetimeStart: expirationDatetimeStart,
             expirationDatetimeEnd: expirationDatetimeEnd,
+            maximumBlockRange: maximumBlockRange,
             toBlock: toBlock,
             limitPerFetch: limitPerFetch,
-            filterFunc: filterFunc,
             filterMarketCategories: filterMarketCategories,
             filterMarketIntervals: filterMarketIntervals,
             marketIntervalMin: Math.min.apply(null, filterMarketIntervals || constants_1.marketIntervalsAll),
@@ -282,6 +283,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 filter
             ]
         ], {
+            maximumBlockRange: marketSearch.maximumBlockRange,
             timestampStop: 0,
             progressCallback: function (progress, eventsList, blockInfo, final, exhausted, nextToBlock) {
                 var e_1, _a, e_2, _b;
@@ -377,48 +379,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         });
     }
     exports.getMarketCreateEvents = getMarketCreateEvents;
-    function getMarketDataList(web3, contractAddr, userAddr, options) {
-        var contract = new web3.eth.Contract((0, digioptions_markets_abi_1["default"])(), contractAddr);
-        var marketDataListAll = [];
-        var marketSearch;
-        var blockTimestampLatest;
-        var toBlock;
-        return web3.eth.getBlock('latest')
-            .then(function (blockHeader) {
-            blockTimestampLatest = blockHeader.timestamp;
-            toBlock = blockHeader.number;
-            return contract.methods.getContractInfo().call();
-        })
-            .then(function (contractInfo) {
-            return parseContractInfo(web3, contractAddr, contractInfo);
-        })
-            .then(function (contractInfo) {
-            marketSearch = marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, options);
-            return true; // dummy value
-        })
-            .then(function () {
-            return getMarketCreateEvents(marketSearch);
-        })
-            .then(function (result) {
-            var events = result[0];
-            marketSearch = result[1]; //marketSearchNew
-            //console.log('events', events);
-            var marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
-            //console.log('marketKeys', contractAddr, marketKeys);
-            var contract = marketSearch.contract;
-            if (marketKeys.length == 0) {
-                //console.log('TODO handle me 1'); // TODO handle
-                return [];
-            }
-            return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
-                .call({});
-        })
-            .then(function (marketDataList) {
-            marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
-            return marketDataListAll;
-        });
-    }
-    exports.getMarketDataList = getMarketDataList;
     /* similar to factsigner's factHash() but with additional data to hash */
     function marketHash(marketBaseData) {
         factsigner_1["default"].validateDataForMarketHash(marketBaseData);

@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketDataList = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = exports.constants = void 0;
+exports.versionMarkets = exports.versionMarketLister = exports.versionToString = exports.versionFromInt = exports.signOrderOffer = exports.orderOfferToHash = exports.marketHash = exports.getPastEvents = exports.getMarketCreateEvents = exports.marketSearchSetup = exports.filterEventsByExpirationDatetime = exports.sortPositionChangeEventsByDatetime = exports.sortMarketCreateEventsByExpirationDatetime = exports.marketListerInfoToMarketListerDescription = exports.getContractInfo = exports.digioptionsMarketListerAbi = exports.digioptionsMarketsAbi = exports.marketStartMaxIntervalBeforeExpiration = exports.constants = exports.parseContractInfo = void 0;
 const web3Utils = __importStar(require("web3-utils"));
 const factsigner_1 = __importDefault(require("factsigner"));
 const ethLibAccount = __importStar(require("eth-lib/lib/account"));
@@ -99,6 +99,7 @@ function parseContractInfo(web3, contractAddr, contractInfo) {
         };
     });
 }
+exports.parseContractInfo = parseContractInfo;
 /* returns a promise */
 function getContractInfo(web3, contractAddr) {
     // use any contract abi for calling getContractInfo()
@@ -205,8 +206,8 @@ const marketStartMaxIntervalBeforeExpiration = [
 ];
 exports.marketStartMaxIntervalBeforeExpiration = marketStartMaxIntervalBeforeExpiration;
 function marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, { // options
-limitPerFetch = null, filterFunc = function () { return true; }, filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
-filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd = constants_1.expirationDatetimeMax, } = {}) {
+limitPerFetch = null, filterMarketCategories = null, // e.g [factsigner.constants.marketCategory.CRYPTO, factsigner.constants.marketCategory.FINANCE],
+filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd = constants_1.expirationDatetimeMax, maximumBlockRange = events_1.maximumBlockRangeDefault, } = {}) {
     //  options = Object.assign({}, marketSearchOptions, options||{});
     return {
         contract: contractInfo.contractMarketLister || contractInfo.contractMarkets,
@@ -215,9 +216,9 @@ filterMarketIntervals = null, expirationDatetimeStart = 0, expirationDatetimeEnd
         timestampCreatedMarkets: contractInfo.timestampCreatedMarkets,
         expirationDatetimeStart: expirationDatetimeStart,
         expirationDatetimeEnd: expirationDatetimeEnd,
+        maximumBlockRange: maximumBlockRange,
         toBlock: toBlock,
         limitPerFetch: limitPerFetch,
-        filterFunc: filterFunc,
         filterMarketCategories: filterMarketCategories,
         filterMarketIntervals: filterMarketIntervals,
         marketIntervalMin: Math.min.apply(null, filterMarketIntervals || constants_1.marketIntervalsAll),
@@ -259,6 +260,7 @@ function getMarketCreateEvents(marketSearch) {
             filter
         ]
     ], {
+        maximumBlockRange: marketSearch.maximumBlockRange,
         timestampStop: 0,
         progressCallback: function (progress, eventsList, blockInfo, final, exhausted, nextToBlock) {
             const eventsNew = filterEventsByExpirationDatetime(eventsList[0], // result from the first (and only) eventNameAndFilter
@@ -333,48 +335,6 @@ function getMarketCreateEvents(marketSearch) {
     });
 }
 exports.getMarketCreateEvents = getMarketCreateEvents;
-function getMarketDataList(web3, contractAddr, userAddr, options) {
-    const contract = new web3.eth.Contract((0, digioptions_markets_abi_1.default)(), contractAddr);
-    let marketDataListAll = [];
-    let marketSearch;
-    let blockTimestampLatest;
-    let toBlock;
-    return web3.eth.getBlock('latest')
-        .then(function (blockHeader) {
-        blockTimestampLatest = blockHeader.timestamp;
-        toBlock = blockHeader.number;
-        return contract.methods.getContractInfo().call();
-    })
-        .then(function (contractInfo) {
-        return parseContractInfo(web3, contractAddr, contractInfo);
-    })
-        .then(function (contractInfo) {
-        marketSearch = marketSearchSetup(contractInfo, blockTimestampLatest, toBlock, options);
-        return true; // dummy value
-    })
-        .then(function () {
-        return getMarketCreateEvents(marketSearch);
-    })
-        .then(function (result) {
-        const events = result[0];
-        marketSearch = result[1]; //marketSearchNew
-        //console.log('events', events);
-        const marketKeys = events.map(function (evt) { return evt.returnValues.marketKey; });
-        //console.log('marketKeys', contractAddr, marketKeys);
-        const contract = marketSearch.contract;
-        if (marketKeys.length == 0) {
-            //console.log('TODO handle me 1'); // TODO handle
-            return [];
-        }
-        return contract.methods.getMarketDataListByMarketKeys(userAddr, marketKeys)
-            .call({});
-    })
-        .then(function (marketDataList) {
-        marketDataListAll = marketDataListAll.concat(marketDataList.filter(marketSearch.filterFunc));
-        return marketDataListAll;
-    });
-}
-exports.getMarketDataList = getMarketDataList;
 /* similar to factsigner's factHash() but with additional data to hash */
 function marketHash(marketBaseData) {
     factsigner_1.default.validateDataForMarketHash(marketBaseData);
