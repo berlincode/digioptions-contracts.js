@@ -43,7 +43,7 @@
     "ethereum"
   ],
   "dependencies": {
-    "factsigner": "git+https://github.com/berlincode/factsigner.git",
+    "factsigner": "git+https://git@github.com/berlincode/factsigner.git",
     "web3": "~1.10.0"
   },
   "devDependencies": {
